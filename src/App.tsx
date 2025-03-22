@@ -1,37 +1,33 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { Text, View } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Import Screens
-import SignUpScreen from '../src/components/signup';
 import SignInScreen from '../src/components/signin';
+import SignUpScreen from '../src/components/signup';
+import GreenhousesScreen from '../src/components/menuinvernaderos';
+import GreenhouseDetailsScreen from '../src/components/invernaderosdetalles'; // Ensure this file exists
 
-// Stack and Tab Navigators
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
+export type RootStackParamList = {
+  SignIn: undefined;
+  SignUp: undefined;
+  Greenhouses: undefined;
+  GreenhouseDetails: { greenhouseId: string; name: string };
+};
 
-// Bottom Tab Navigation (for main screens)
-function MainTabs() {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name="Invernadero" component={() => <View><Text>Invernadero</Text></View>} />
-      <Tab.Screen name="Perfil" component={() => <View><Text>Perfil</Text></View>} />
-    </Tab.Navigator>
-  );
-}
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Stack Navigation (for authentication)
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-      <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Iniciar Sesión' }} />
+      <Stack.Navigator screenOptions={{ headerShown: true }}>
+        <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Iniciar Sesión' }} />
         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Registrarse' }} />
-        
-        
+        <Stack.Screen name="Greenhouses" component={GreenhousesScreen} options={{ title: 'Invernaderos' }} />
+        <Stack.Screen name="GreenhouseDetails" component={GreenhouseDetailsScreen} options={{ title: 'Detalles del Invernadero' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+
