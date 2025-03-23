@@ -57,8 +57,8 @@ export default function SignUpScreen() {
 <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Crear cuenta</Text>
       </TouchableOpacity>
-      <br/>
-          <Button onPress={() => navigation.navigate('SignIn')}>
+
+          <Button onPress={() => navigation.navigate('SignIn') } style={{ marginTop: 20 }} >
           ¿Ya tienes cuenta? Inicia sesión aquí </Button>
   
     </View>

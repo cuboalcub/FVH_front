@@ -47,13 +47,13 @@ export default function SignInScreen() {
       <TouchableOpacity style={styles.button} onPress={handleSignIn}>
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
-      <br/>
-      <Button onPress={() => navigation.navigate('SignUp')}>
+     
+      <Button onPress={() => navigation.navigate('SignUp')} style={{ marginTop: 20 }}>
         Aun no tienes cuenta? Crea una cuenta
       </Button>
 
-      <Button onPress={() => navigation.navigate('Greenhouses')}>
-        invernaderos
+      <Button onPress={() => navigation.navigate('Greenhouses')} style={{ marginTop: 20 }}>
+        Invernaderos
       </Button>
     </View>
   );
