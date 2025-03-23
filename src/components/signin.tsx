@@ -48,7 +48,6 @@ export default function SignInScreen() {
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
 
-      <br/>
       
       <Button onPress={() => navigation.navigate('SignUp')}>
         Aun no tienes cuenta? Crea una cuenta
