@@ -3,30 +3,30 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'GreenhouseDetails'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 
-export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
-  const { greenhouseId, name } = route.params;
+export default function RackDetailsScreen({ route, navigation }: Props) {
+  const { rackId, greenhouseId, name } = route.params;
 
-  const racks = [
-    { id: '1', name: 'Rack A' },
-    { id: '2', name: 'Rack B' },
+  const shelves = [
+    { id: '1', name: 'Shelf 1' },
+    { id: '2', name: 'Shelf 2' },
   ];
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{name}</Text>
-      <Text style={styles.subtitle}>Racks in {name}</Text>
+      <Text style={styles.subtitle}>Shelves in {name}</Text>
 
-      {racks.map((rack) => (
+      {shelves.map((shelf) => (
         <TouchableOpacity
-          key={rack.id}
-          style={styles.rackButton}
+          key={shelf.id}
+          style={styles.shelfButton}
           onPress={() =>
-            navigation.navigate('RackDetails', { rackId: rack.id, greenhouseId, name: rack.name })
+            navigation.navigate('ShelfDetails', { shelfId: shelf.id, rackId, greenhouseId })
           }
         >
-          <Text style={styles.rackText}>{rack.name}</Text>
+          <Text style={styles.shelfText}>{shelf.name}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -50,15 +50,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 20,
   },
-  rackButton: {
-    backgroundColor: '#4CAF50',
+  shelfButton: {
+    backgroundColor: '#008CBA',
     padding: 15,
     borderRadius: 8,
     marginVertical: 10,
     width: '80%',
     alignItems: 'center',
   },
-  rackText: {
+  shelfText: {
     color: '#fff',
     fontSize: 18,
   },
