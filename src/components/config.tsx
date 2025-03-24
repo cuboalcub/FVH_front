@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import axios from 'axios';
-import { useNavigation } from 'expo-router';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ParamListBase } from '@react-navigation/native';
+
 
 const ConfigScreen = () => {
 
@@ -15,7 +13,7 @@ const ConfigScreen = () => {
 
   // Fetch data from API
   useEffect(() => {
-    axios.get('https://api.example.com/data')  // Replace with actual API URL
+    axios.get('https://api.example.com/data') 
       .then(response => {
         setChartData({
           labels: response.data.labels,
@@ -26,8 +24,8 @@ const ConfigScreen = () => {
   }, []);
 
   // Handlers for buttons
-  const activateSprinklers = () => alert('Sprinklers Activated');
-  const activateLights = () => alert('Lights Activated');
+  const activateSprinklers = () => alert('Aspersores Activados');
+  const activateLights = () => alert('Luces Activadas');
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -58,7 +56,7 @@ const ConfigScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', padding: 20, backgroundColor: '#ff8c00', flex: 1 },
+  container: { alignItems: 'center', padding: 20, backgroundColor: '#FFA500', flex: 1 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
   chart: { marginVertical: 10, borderRadius: 10 },
   button: {

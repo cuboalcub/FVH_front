@@ -7,9 +7,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
 export default function GreenhousesScreen({ navigation }: Props) {
   const greenhouses = [
-    { id: '1', name: 'Greenhouse 1' },
-    { id: '2', name: 'Greenhouse 2' },
-    { id: '3', name: 'Greenhouse 3' },
+    { id: '1', name: 'Invernadero 1' },
+    { id: '2', name: 'Invernadero 2' },
+    { id: '3', name: 'Invernadero 3' },
   ];
 
   return (

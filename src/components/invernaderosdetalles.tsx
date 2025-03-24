@@ -16,7 +16,7 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{name}</Text>
-      <Text style={styles.subtitle}>Racks in {name}</Text>
+      <Text style={styles.subtitle}>Racks en {name}</Text>
       {racks.map((rack) => (
         <TouchableOpacity
           key={rack.id}

@@ -10,8 +10,8 @@ export default function ShelfDetailsScreen({ route }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Shelf {shelfId}</Text>
-      <Text style={styles.details}>Plant details for this shelf will be displayed here.</Text>
+      <Text style={styles.title}> Estante {shelfId}</Text>
+      <Text style={styles.details}>Placeholder Detalles de planta.</Text>
     </View>
   );
 }
