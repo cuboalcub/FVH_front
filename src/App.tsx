@@ -8,6 +8,8 @@ import { Text, View } from 'react-native';
 import SignUpScreen from '../src/components/signup';
 import SignInScreen from '../src/components/signin';
 
+
+
 // Stack and Tab Navigators
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();

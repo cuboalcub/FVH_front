@@ -1,35 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { login } from '../services/authService'; // Importamos el servicio de login
 
 export default function SignInScreen() {
-    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  const [email, setEmail] = useState('');
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignIn = () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Por favor ingresa tu correo y contraseña');
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
 
-    // Lógica de autenticación aquí
-    Alert.alert('Inicio de sesión exitoso', `Bienvenido, ${email}`);
+    try {
+      console.log("botton");
+      const result = await login(username, password);
+      Alert.alert('Éxito', 'Inicio de sesión exitoso');
+      navigation.navigate('Home'); // Cambia 'Home' por tu pantalla principal
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Ocurrió un error al iniciar sesión');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>App invernadero</Text>
+      <Text style={styles.title}>Iniciar Sesión</Text>
 
       <Text style={styles.label}>Correo Electrónico</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ingrese un correo electrónico"
-        placeholderTextColor="#999"
-        value={email}
-        onChangeText={setEmail}
+        placeholder="Correo Electrónico"
+        value={username}
+        onChangeText={setUsername}
         autoCapitalize="none"
         keyboardType="email-address"
       />
@@ -37,20 +43,18 @@ export default function SignInScreen() {
       <Text style={styles.label}>Contraseña</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ingrese una contraseña"
-        placeholderTextColor="#999"
+        placeholder="Contraseña"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Iniciar sesión</Text>
       </TouchableOpacity>
 
-      
       <Button onPress={() => navigation.navigate('SignUp')}>
-        Aun no tienes cuenta? Crea una cuenta
+        ¿No tienes cuenta? Regístrate aquí
       </Button>
     </View>
   );
@@ -62,7 +66,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FFA500', // Orange background
+    backgroundColor: '#FFA500', // Fondo naranja
   },
   title: {
     fontSize: 24,
@@ -96,15 +100,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-  },
-  registerText: {
-    marginTop: 15,
-    color: '#000',
-  },
-  link: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginTop: 5,
   },
 });

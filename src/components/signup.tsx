@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'reac
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { signup } from '../services/authService'; // Importamos el servicio de signup
 
 export default function SignUpScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -10,7 +11,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
@@ -21,15 +22,20 @@ export default function SignUpScreen() {
       return;
     }
 
-    // Aquí va la lógica de registro
-    Alert.alert('Registro exitoso', `Bienvenido, ${email}`);
+    try {
+      const result = await signup(email, password);
+      Alert.alert('Registro exitoso', `Bienvenido, ${email}`);
+      navigation.navigate('SignIn');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Ocurrió un error al registrarse');
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Crear Cuenta</Text>
 
-<Text style={styles.label}>Correo Electrónico</Text>
+      <Text style={styles.label}>Correo Electrónico</Text>
       <TextInput
         style={styles.input}
         placeholder="Correo Electrónico"
@@ -38,7 +44,8 @@ export default function SignUpScreen() {
         autoCapitalize="none"
         keyboardType="email-address"
       />
-<Text style={styles.label}>Contraseña</Text>
+
+      <Text style={styles.label}>Contraseña</Text>
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
@@ -46,7 +53,8 @@ export default function SignUpScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
-<Text style={styles.label}>Confirmar Contraseña</Text> 
+
+      <Text style={styles.label}>Confirmar Contraseña</Text>
       <TextInput
         style={styles.input}
         placeholder="Confirmar Contraseña"
@@ -54,17 +62,17 @@ export default function SignUpScreen() {
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
-<TouchableOpacity style={styles.button} onPress={handleSignUp}>
+
+      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Crear cuenta</Text>
       </TouchableOpacity>
 
-          <Button onPress={() => navigation.navigate('SignIn')}>
-          ¿Ya tienes cuenta? Inicia sesión aquí </Button>
-  
+      <Button onPress={() => navigation.navigate('SignIn')}>
+        ¿Ya tienes cuenta? Inicia sesión aquí
+      </Button>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -72,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FFA500', // Orange background
+    backgroundColor: '#FFA500', // Fondo naranja
   },
   title: {
     fontSize: 24,
@@ -106,15 +114,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-  },
-  registerText: {
-    marginTop: 15,
-    color: '#000',
-  },
-  link: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginTop: 5,
   },
 });
