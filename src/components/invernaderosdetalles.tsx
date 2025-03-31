@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import BackgroundWrapper from './background';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GreenhouseDetails'>;
 
@@ -14,7 +15,7 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
   ];
 
   return (
-    <View style={styles.container}>
+   <BackgroundWrapper>
       <Text style={styles.title}>{name}</Text>
       <Text style={styles.subtitle}>Racks en {name}</Text>
       {racks.map((rack) => (
@@ -27,7 +28,7 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
           <Text style={styles.rackText}>{rack.name}</Text>
         </TouchableOpacity>
       ))}
-    </View>
+    </BackgroundWrapper>
   );
 }
 

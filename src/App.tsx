@@ -10,6 +10,7 @@ import GreenhouseDetailsScreen from '../src/components/invernaderosdetalles';
 import RackDetailsScreen from './components/rackdetalles';
 import ShelfDetailsScreen from './components/estantes';
 import ConfigScreen from './components/config';
+import PedidosScreen from './components/pedidos';
 
 
 export type RootStackParamList = {
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   RackDetails: { rackId: string; greenhouseId: string; name: string };
   ShelfDetails: { shelfId: string; rackId: string; greenhouseId: string };
   Config: undefined;
+  PedidosScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,6 +37,7 @@ export default function App() {
         <Stack.Screen name="RackDetails" component={RackDetailsScreen} options={{ title: 'Detalles Rack' }} />
         <Stack.Screen name="ShelfDetails" component={ShelfDetailsScreen} options={{ title: 'Detalles Shelf' }} />
         <Stack.Screen name="Config" component={ConfigScreen} />
+        <Stack.Screen name= "PedidosScreen" component={PedidosScreen} options={{ title: 'PedidosScreen' }}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

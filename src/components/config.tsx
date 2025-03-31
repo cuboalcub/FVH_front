@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import axios from 'axios';
+import BackgroundWrapper from './background';
+
 
 
 const ConfigScreen = () => {
@@ -28,7 +30,10 @@ const ConfigScreen = () => {
   const activateLights = () => alert('Luces Activadas');
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    
+    <BackgroundWrapper>
+   
+      <Text style={styles.title}>Configuración</Text>
       <Text style={styles.title}>Ajustes Manuales</Text>
       <LineChart
         data={chartData}
@@ -51,12 +56,12 @@ const ConfigScreen = () => {
       <TouchableOpacity style={styles.button} onPress={activateLights}>
         <Text style={styles.buttonText}>Activar Luces</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </BackgroundWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', padding: 20, backgroundColor: '#FFA500', flex: 1 },
+  
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
   chart: { marginVertical: 10, borderRadius: 10 },
   button: {
