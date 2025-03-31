@@ -3,11 +3,25 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
+import BackgroundWrapper from './background';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 
-export default function RackDetailsScreen({ route, navigation }: Props) {
+export default function RackDetailsScreen ({ route, navigation }: Props) {
   const { rackId, greenhouseId, name } = route.params;
+
+  // List of racks (replace with dynamic data if needed)
+  const racks = [
+    { id: '1', name: 'Rack 1' },
+    { id: '2', name: 'Rack 2' }
+  ];
+
+  // Find current rack index
+  const currentIndex = racks.findIndex(rack => rack.id === rackId);
+
+  // Get previous and next rack if available
+  const prevRack = currentIndex > 0 ? racks[currentIndex - 1] : null;
+  const nextRack = currentIndex < racks.length - 1 ? racks[currentIndex + 1] : null;
 
   // Sample tray data
   const trays = [
@@ -17,22 +31,52 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
     { id: '4', crop: 'Cebada', temp: '22°C', humidity: '83%' },
     { id: '5', crop: 'Cebada', temp: '22°C', humidity: '64%' },
     { id: '6', crop: 'Centeno', temp: '22°C', humidity: '84%' },
-    { id: '7', crop: 'Centeno', temp: '22°C', humidity: '84%' },
-    { id: '8', crop: 'Centeno', temp: '22°C', humidity: '84%' },
-    { id: '9', crop: 'Centeno', temp: '22°C', humidity: '84%' },
-    { id: '10', crop: 'Centeno', temp: '22°C', humidity: '84%' },
   ];
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       {/* Header with navigation arrows */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="chevron-back-circle" size={32} color="black" />
+        {/* Navigate to Previous Rack */}
+        <TouchableOpacity 
+          onPress={() => {
+            if (prevRack) {
+              navigation.replace('RackDetails', {
+                rackId: prevRack.id,
+                greenhouseId,
+                name: prevRack.name,
+              });
+            }
+          }}
+          disabled={!prevRack} // Disable if no previous rack
+        >
+          <Ionicons 
+            name="chevron-back-circle" 
+            size={32} 
+            color={prevRack ? 'black' : 'gray'} 
+          />
         </TouchableOpacity>
+
         <Text style={styles.title}>{name}</Text>
-        <TouchableOpacity>
-          <Ionicons name="chevron-forward-circle" size={32} color="black" />
+
+        {/* Navigate to Next Rack */}
+        <TouchableOpacity 
+          onPress={() => {
+            if (nextRack) {
+              navigation.replace('RackDetails', {
+                rackId: nextRack.id,
+                greenhouseId,
+                name: nextRack.name,
+              });
+            }
+          }}
+          disabled={!nextRack} // Disable if no next rack
+        >
+          <Ionicons 
+            name="chevron-forward-circle" 
+            size={32} 
+            color={nextRack ? 'black' : 'gray'} 
+          />
         </TouchableOpacity>
       </View>
 
@@ -66,9 +110,8 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
           <Ionicons name="home" size={32} color="white" />
         </TouchableOpacity>
         <Text style={styles.footerText}>Ajustes</Text>
-        
       </View>
-    </View>
+    </BackgroundWrapper>
   );
 }
 
@@ -90,11 +133,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   detailsContainer: {
-    backgroundColor: '#20B2AA',
+    backgroundColor: '#F4A460',
     padding: 15,
     borderRadius: 10,
     marginVertical: 15,
     width: '90%',
+    borderStyle: 'solid',
+    borderWidth: 5,
+    borderColor: '#ff8c00',
   },
   detailsTitle: {
     fontSize: 18,
@@ -142,3 +188,4 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
+

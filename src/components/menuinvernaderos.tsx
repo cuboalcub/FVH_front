@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Button } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App'; // Ensure correct import path
+import BackgroundWrapper from './background';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
@@ -13,25 +14,49 @@ export default function GreenhousesScreen({ navigation }: Props) {
   ];
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       <Text style={styles.header}>Greenhouses</Text>
       <View style={styles.greenhousesContainer}>
         {greenhouses.map((house) => (
           <TouchableOpacity
-            key={house.id}
-            style={styles.greenhouseWrapper}
-            onPress={() => navigation.navigate('GreenhouseDetails', { greenhouseId: house.id, name: house.name })}
-          >
-            <Image source={require('../../assets/greenhouse.png')} style={styles.image} />
-            <Text style={styles.number}>{house.id}</Text>
-          </TouchableOpacity>
+          key={house.id}
+          style={styles.greenhouseWrapper}
+          onPress={() => navigation.navigate('GreenhouseDetails', { greenhouseId: house.id, name: house.name })}
+        >
+          <Image source={require('../../assets/greenhouse.png')} style={styles.image} />
+          <Text style={styles.number}>{house.id}</Text>
+        </TouchableOpacity>
+
+          
         ))}
+        
       </View>
-    </View>
+      <TouchableOpacity
+            style={styles.button} onPress={() => navigation.navigate('PedidosScreen') }>
+            <Text style={styles.buttonText}> Crear cuenta</Text>
+          </TouchableOpacity>
+   </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
+  button: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    marginTop: 10,
+    position: 'absolute', // Position it absolutely
+    bottom: 20, // Place it at the bottom
+    alignSelf: 'center',
+  },
+
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFA500',
