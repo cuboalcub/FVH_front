@@ -13,7 +13,7 @@ const ConfigScreen = () => {
 
   // Fetch data from API
   useEffect(() => {
-    axios.get('https://api.example.com/data') 
+    axios.get('mqtt://192.168.158.151:1883') 
       .then(response => {
         setChartData({
           labels: response.data.labels,
