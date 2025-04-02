@@ -10,20 +10,16 @@ type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 export default function RackDetailsScreen ({ route, navigation }: Props) {
   const { rackId, greenhouseId, name } = route.params;
 
-  // List of racks (replace with dynamic data if needed)
   const racks = [
     { id: '1', name: 'Rack 1' },
     { id: '2', name: 'Rack 2' }
   ];
 
-  // Find current rack index
   const currentIndex = racks.findIndex(rack => rack.id === rackId);
 
-  // Get previous and next rack if available
   const prevRack = currentIndex > 0 ? racks[currentIndex - 1] : null;
   const nextRack = currentIndex < racks.length - 1 ? racks[currentIndex + 1] : null;
 
-  // Sample tray data
   const trays = [
     { id: '1', crop: 'Maíz', temp: '22°C', humidity: '84%' },
     { id: '2', crop: 'Maíz', temp: '22°C', humidity: '84%' },
@@ -70,7 +66,7 @@ export default function RackDetailsScreen ({ route, navigation }: Props) {
               });
             }
           }}
-          disabled={!nextRack} // Disable if no next rack
+          disabled={!nextRack}
         >
           <Ionicons 
             name="chevron-forward-circle" 

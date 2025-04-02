@@ -10,8 +10,8 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
   const { greenhouseId, name } = route.params;
 
   const racks = [
-    { id: '1', name: 'Rack A' },
-    { id: '2', name: 'Rack B' },
+    { id: '1', name: 'Rack 1' },
+    { id: '2', name: 'Rack 1' },
   ];
 
   return (

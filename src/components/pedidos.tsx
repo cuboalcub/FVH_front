@@ -58,7 +58,7 @@ const PedidosScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#FFA500' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  orderCard: { backgroundColor: 'white', padding: 15, marginBottom: 10, borderRadius: 10 },
+  orderCard: { backgroundColor: '#ffc64d', padding: 15, marginBottom: 10, borderRadius: 10 },
   orderTitle: { fontSize: 18, fontWeight: 'bold' },
   orderItem: { fontSize: 14, color: '#333' },
   
@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
   },
   plusText: { fontSize: 30, color: 'white', fontWeight: 'bold' },
 
-  // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '80%',
-    backgroundColor: 'white',
+    backgroundColor: '#ffb647',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',

@@ -53,7 +53,11 @@ export default function SignInScreen() {
       </Button>
 
       <Button onPress={() => navigation.navigate('Greenhouses')} style={{ marginTop: 20 }}>
-        Invernaderos
+        Vista Clientes
+      </Button>
+
+      <Button onPress={() => navigation.navigate('Greenhouses')} style={{ marginTop: 20 }}>
+        Vista Admin
       </Button>
     </View>
   );

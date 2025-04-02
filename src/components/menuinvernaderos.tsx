@@ -33,7 +33,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
       </View>
       <TouchableOpacity
             style={styles.button} onPress={() => navigation.navigate('PedidosScreen') }>
-            <Text style={styles.buttonText}> Crear cuenta</Text>
+            <Text style={styles.buttonText}> Pedidos </Text>
           </TouchableOpacity>
    </BackgroundWrapper>
   );
@@ -41,7 +41,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   button: {
-    width: '100%',
+    width: '80%',
     height: 50,
     backgroundColor: '#000',
     justifyContent: 'center',
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10,
     position: 'absolute', // Position it absolutely
-    bottom: 20, // Place it at the bottom
+    bottom: 30, // Place it at the bottom
     alignSelf: 'center',
   },
 
