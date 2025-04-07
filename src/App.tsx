@@ -1,18 +1,10 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { UserProvider } from "./components/usercontext";
 
 // Import Screens
-<<<<<<< HEAD
-import SignInScreen from "../src/components/signin";
-import SignUpScreen from "../src/components/signup";
-import GreenhousesScreen from "../src/components/menuinvernaderos";
-import GreenhouseDetailsScreen from "../src/components/invernaderosdetalles";
-import RackDetailsScreen from "./components/rackdetalles";
-import ShelfDetailsScreen from "./components/estantes";
-import ConfigScreen from "./components/config";
-import MQTTScreen from "./components/MQTTScreen"; // Sin extensión
-=======
+
 import SignInScreen from '../src/components/signin';
 import SignUpScreen from '../src/components/signup';
 import GreenhousesScreen from '../src/components/menuinvernaderos';
@@ -21,8 +13,9 @@ import RackDetailsScreen from './components/rackdetalles';
 import ShelfDetailsScreen from './components/estantes';
 import ConfigScreen from './components/config';
 import PedidosScreen from './components/pedidos';
-
->>>>>>> 65e54950c9c46442bfdaba3f4cd7f2a519e91f25
+import ConfigUsuariosScreen from "./components/userssettings";
+import SensorDataScreen from "./components/sensorsettings";
+import MQTTScreen from "./components/MQTTScreen";
 
 export type RootStackParamList = {
   SignIn: undefined;
@@ -32,22 +25,18 @@ export type RootStackParamList = {
   RackDetails: { rackId: string; greenhouseId: string; name: string };
   ShelfDetails: { shelfId: string; rackId: string; greenhouseId: string };
   Config: undefined;
-<<<<<<< HEAD
-  MQTT: undefined; // ➕ Agregar MQTT en la lista de rutas
-=======
+  MQTT: undefined;
   PedidosScreen: undefined;
->>>>>>> 65e54950c9c46442bfdaba3f4cd7f2a519e91f25
+  ConfigUsuariosScreen: undefined;
+  SensorData: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
+    <UserProvider>
     <NavigationContainer>
-<<<<<<< HEAD
-      <Stack.Navigator screenOptions={{ headerShown: true }}> 
-      <Stack.Screen name="MQTTTest" component={MQTTScreen} />
-=======
       <Stack.Navigator screenOptions={{ headerShown: true }}>
         <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Iniciar Sesión' }} />
         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Registrarse' }} />
@@ -57,8 +46,11 @@ export default function App() {
         <Stack.Screen name="ShelfDetails" component={ShelfDetailsScreen} options={{ title: 'Detalles Shelf' }} />
         <Stack.Screen name="Config" component={ConfigScreen} />
         <Stack.Screen name= "PedidosScreen" component={PedidosScreen} options={{ title: 'PedidosScreen' }}/>
->>>>>>> 65e54950c9c46442bfdaba3f4cd7f2a519e91f25
+        <Stack.Screen name="ConfigUsuariosScreen" component={ConfigUsuariosScreen} />
+        <Stack.Screen name= "SensorData" component={SensorDataScreen}/>
+
       </Stack.Navigator>
     </NavigationContainer>
+    </UserProvider>
   );
 }

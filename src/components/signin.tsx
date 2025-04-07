@@ -3,11 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useUser } from './usercontext'; 
 
 export default function SignInScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { setUserType } = useUser();
 
   const handleSignIn = () => {
     if (!email || !password) {
@@ -52,11 +54,25 @@ export default function SignInScreen() {
         Aun no tienes cuenta? Crea una cuenta
       </Button>
 
-      <Button onPress={() => navigation.navigate('Greenhouses')} style={{ marginTop: 20 }}>
+   {/* Vista Cliente */}
+   <Button
+        onPress={() => {
+          setUserType('user');
+          navigation.navigate('Greenhouses');
+        }}
+        style={{ marginTop: 20 }}
+      >
         Vista Clientes
       </Button>
 
-      <Button onPress={() => navigation.navigate('Greenhouses')} style={{ marginTop: 20 }}>
+      {/* Vista Admin */}
+      <Button
+        onPress={() => {
+          setUserType('admin');
+          navigation.navigate('Greenhouses');
+        }}
+        style={{ marginTop: 20 }}
+      >
         Vista Admin
       </Button>
     </View>
@@ -69,7 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FFA500', // Orange background
+    backgroundColor: '#FFA500', 
   },
   title: {
     fontSize: 24,
