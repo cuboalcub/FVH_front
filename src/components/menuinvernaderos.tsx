@@ -37,31 +37,51 @@ export default function GreenhousesScreen({ navigation }: Props) {
         <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('ConfigUsuariosScreen')}>
           <Text style={styles.adminButtonText}>Usuario</Text>
         </TouchableOpacity>
-        
+
       )}
       {userType === 'admin' && (
         <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('SensorData')}>
           <Text style={styles.adminButtonText}> Configuracion de admin </Text>
         </TouchableOpacity>
       )}
+
+      <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('PedidosScreen')}>
+        <Text style={styles.adminButtonText}> Pedidos </Text>
+      </TouchableOpacity>
     </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFA500' },
-  header: { fontSize: 24,
-     fontWeight: 'bold', marginBottom: 20, color: '#fff' },
-  greenhousesContainer: { flexDirection: 'row', 
-    justifyContent: 'space-around', 
-    width: '90%' },
-  greenhouseWrapper: { alignItems: 'center' },
-  image: { width: 80, 
-    height: 80 },
-  number: { fontSize: 16, 
-    fontWeight: 'bold', 
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFA500'
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20, color: '#fff'
+  },
+  greenhousesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '90%'
+  },
+  greenhouseWrapper: {
+    alignItems: 'center'
+  },
+  image: {
+    width: 80,
+    height: 80
+  },
+  number: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#fff',
-     marginTop: 5 },
+    marginTop: 5
+  },
   adminButton: {
     marginTop: 20,
     backgroundColor: 'black',
@@ -70,5 +90,9 @@ const styles = StyleSheet.create({
     width: 200,
     alignItems: 'center',
   },
-  adminButtonText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
+  adminButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
 });

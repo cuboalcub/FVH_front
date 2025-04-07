@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, FlatList } from 'react-native';
+import BackgroundWrapper from './background';
 
 const PedidosScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -9,7 +10,7 @@ const PedidosScreen = () => {
   ]);
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       <Text style={styles.header}>Pedidos</Text>
 
       {/* Orders List */}
@@ -51,7 +52,7 @@ const PedidosScreen = () => {
           </View>
         </View>
       </Modal>
-    </View>
+   </BackgroundWrapper>
   );
 };
 

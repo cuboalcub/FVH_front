@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import BackgroundWrapper from './background';
 
 export default function ConfigUsuariosScreen() {
   const [users, setUsers] = useState([
@@ -28,7 +29,7 @@ export default function ConfigUsuariosScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       <Text style={styles.title}>Config. Usuarios</Text>
 
       <FlatList
@@ -80,7 +81,7 @@ export default function ConfigUsuariosScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+      </BackgroundWrapper>
   );
 }
 
