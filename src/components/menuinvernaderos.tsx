@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useUser } from './usercontext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import BackgroundWrapper from './background';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
@@ -16,7 +17,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
   ];
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       <Text style={styles.header}>Greenhouses</Text>
       <View style={styles.greenhousesContainer}>
         {greenhouses.map((house) => (
@@ -43,7 +44,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
           <Text style={styles.adminButtonText}> Configuracion de admin </Text>
         </TouchableOpacity>
       )}
-    </View>
+    </BackgroundWrapper>
   );
 }
 

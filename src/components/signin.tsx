@@ -4,9 +4,10 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useUser } from './usercontext'; 
+import BackgroundWrapper from './background';
 
 export default function SignInScreen() {
-    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { setUserType } = useUser();
@@ -22,7 +23,7 @@ export default function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       <Text style={styles.title}>App invernadero</Text>
 
       <Text style={styles.label}>Correo Electrónico</Text>
@@ -75,7 +76,7 @@ export default function SignInScreen() {
       >
         Vista Admin
       </Button>
-    </View>
+    </BackgroundWrapper>
   );
 }
 
