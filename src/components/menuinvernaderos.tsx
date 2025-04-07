@@ -48,6 +48,11 @@ export default function GreenhousesScreen({ navigation }: Props) {
       <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('PedidosScreen')}>
         <Text style={styles.adminButtonText}> Pedidos </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('Notifications')}>
+        <Text style={styles.adminButtonText}> Logs </Text>
+      </TouchableOpacity>
+    
     </BackgroundWrapper>
   );
 }

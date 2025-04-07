@@ -15,6 +15,7 @@ import ConfigScreen from './components/config';
 import PedidosScreen from './components/pedidos';
 import ConfigUsuariosScreen from "./components/userssettings";
 import SensorDataScreen from "./components/sensorsettings";
+import LogsScreen from "./components/notifications";
 import MQTTScreen from "./components/MQTTScreen";
 
 export type RootStackParamList = {
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   PedidosScreen: undefined;
   ConfigUsuariosScreen: undefined;
   SensorData: undefined;
+  Notifications: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -48,7 +50,7 @@ export default function App() {
         <Stack.Screen name= "PedidosScreen" component={PedidosScreen} options={{ title: 'PedidosScreen' }}/>
         <Stack.Screen name="ConfigUsuariosScreen" component={ConfigUsuariosScreen} />
         <Stack.Screen name= "SensorData" component={SensorDataScreen}/>
-
+        <Stack.Screen name= "Notifications" component={LogsScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
     </UserProvider>
