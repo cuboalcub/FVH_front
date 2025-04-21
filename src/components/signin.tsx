@@ -5,6 +5,7 @@ import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useUser } from './usercontext'; 
 import BackgroundWrapper from './background';
+import { login } from '../utils/authservice'; // Asegúrate de importar tu servicio de autenticación
 
 export default function SignInScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -18,7 +19,11 @@ export default function SignInScreen() {
       return;
     }
 
-    // Lógica de autenticación aquí
+    const resultado = login(email, password)
+    if (resultado.status === 200) {
+      Alert.alert('Inicio de sesión exitoso', `Bienvenido, ${email}`);
+      navigation.navigate('Greenhouses'); // Navegar a la pantalla de invernaderos
+    }
     Alert.alert('Inicio de sesión exitoso', `Bienvenido, ${email}`);
   };
 
