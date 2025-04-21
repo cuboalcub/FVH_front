@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import BackgroundWrapper from './background';
+import CustomBottomBar from './barraInferior';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GreenhouseDetails'>;
 
@@ -28,6 +29,7 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
           <Text style={styles.rackText}>{rack.name}</Text>
         </TouchableOpacity>
       ))}
+      <CustomBottomBar/>
     </BackgroundWrapper>
   );
 }

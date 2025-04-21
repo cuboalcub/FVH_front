@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, FlatList, Platform } from 'react-native';
 import BackgroundWrapper from './background';
 import { Picker } from '@react-native-picker/picker';
+import CustomBottomBar from './barraInferior';
 
 const PedidosScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -122,9 +123,12 @@ const PedidosScreen = () => {
             <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
               <Text style={styles.closeText}>X</Text>
             </TouchableOpacity>
+
+            
           </View>
         </View>
       </Modal>
+      <CustomBottomBar />
     </BackgroundWrapper>
   );
 };

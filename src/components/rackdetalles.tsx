@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
+import CustomBottomBar from './barraInferior';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 
@@ -107,6 +108,7 @@ export default function RackDetailsScreen ({ route, navigation }: Props) {
         </TouchableOpacity>
         <Text style={styles.footerText}>Ajustes</Text>
       </View>
+      <CustomBottomBar/>
     </BackgroundWrapper>
   );
 }
