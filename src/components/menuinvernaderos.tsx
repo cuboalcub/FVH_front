@@ -1,12 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Button } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useUser } from './usercontext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App'; // Ensure correct import path
+import { RootStackParamList } from '../App';
 import BackgroundWrapper from './background';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
 export default function GreenhousesScreen({ navigation }: Props) {
+  const { userType } = useUser();
+
   const greenhouses = [
     { id: '1', name: 'Invernadero 1' },
     { id: '2', name: 'Invernadero 2' },
@@ -19,73 +22,82 @@ export default function GreenhousesScreen({ navigation }: Props) {
       <View style={styles.greenhousesContainer}>
         {greenhouses.map((house) => (
           <TouchableOpacity
-          key={house.id}
-          style={styles.greenhouseWrapper}
-          onPress={() => navigation.navigate('GreenhouseDetails', { greenhouseId: house.id, name: house.name })}
-        >
-          <Image source={require('../../assets/greenhouse.png')} style={styles.image} />
-          <Text style={styles.number}>{house.id}</Text>
+            key={house.id}
+            style={styles.greenhouseWrapper}
+            onPress={() => navigation.navigate('GreenhouseDetails', { greenhouseId: house.id, name: house.name })}
+          >
+            <Image source={require('../../assets/greenhouse.png')} style={styles.image} />
+            <Text style={styles.number}>{house.id}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Admin-only button */}
+      {userType === 'admin' && (
+        <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('ConfigUsuariosScreen')}>
+          <Text style={styles.adminButtonText}>Usuario</Text>
         </TouchableOpacity>
 
-          
-        ))}
-        
-      </View>
-      <TouchableOpacity
-            style={styles.button} onPress={() => navigation.navigate('PedidosScreen') }>
-            <Text style={styles.buttonText}> Crear cuenta</Text>
-          </TouchableOpacity>
-   </BackgroundWrapper>
+      )}
+      {userType === 'admin' && (
+        <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('SensorData')}>
+          <Text style={styles.adminButtonText}> Configuracion de admin </Text>
+        </TouchableOpacity>
+      )}
+
+      <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('PedidosScreen')}>
+        <Text style={styles.adminButtonText}> Pedidos </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('Notifications')}>
+        <Text style={styles.adminButtonText}> Logs </Text>
+      </TouchableOpacity>
+    
+    </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    marginTop: 10,
-    position: 'absolute', // Position it absolutely
-    bottom: 20, // Place it at the bottom
-    alignSelf: 'center',
-  },
-
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-  },
   container: {
     flex: 1,
-    backgroundColor: '#FFA500',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FFA500'
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#fff',
+    marginBottom: 20, color: '#fff'
   },
   greenhousesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '90%',
+    width: '90%'
   },
   greenhouseWrapper: {
-    alignItems: 'center',
+    alignItems: 'center'
   },
   image: {
     width: 80,
-    height: 80,
+    height: 80
   },
   number: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 5,
+    marginTop: 5
+  },
+  adminButton: {
+    marginTop: 20,
+    backgroundColor: 'black',
+    padding: 15,
+    borderRadius: 10,
+    width: 200,
+    alignItems: 'center',
+  },
+  adminButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold'
   },
 });
-

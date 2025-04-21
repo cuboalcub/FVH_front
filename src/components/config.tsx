@@ -61,9 +61,16 @@ const ConfigScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-  chart: { marginVertical: 10, borderRadius: 10 },
+
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10
+  },
+  chart: {
+    marginVertical: 10,
+    borderRadius: 10
+  },
   button: {
     backgroundColor: '#000',
     padding: 15,
@@ -72,7 +79,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 5,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
 });
 
 export default ConfigScreen;

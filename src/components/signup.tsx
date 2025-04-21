@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'reac
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import BackgroundWrapper from './background';
 
 export default function SignUpScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -26,7 +27,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <BackgroundWrapper>
       <Text style={styles.title}>Crear Cuenta</Text>
 
 <Text style={styles.label}>Correo Electrónico</Text>
@@ -61,7 +62,7 @@ export default function SignUpScreen() {
           <Button onPress={() => navigation.navigate('SignIn') } style={{ marginTop: 20 }} >
           ¿Ya tienes cuenta? Inicia sesión aquí </Button>
   
-    </View>
+    </BackgroundWrapper>
   );
 }
 
