@@ -6,6 +6,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useUser } from './usercontext'; 
 import BackgroundWrapper from './background';
 import { login } from '../utils/authservice'; // Asegúrate de importar tu servicio de autenticación
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function SignInScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -13,18 +15,25 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
   const { setUserType } = useUser();
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Por favor ingresa tu correo y contraseña');
       return;
     }
 
-    const resultado = login(email, password)
+    const resultado =  await login(email, password)
+    console.log('resultado', resultado);
+    
     if (resultado.status === 200) {
       Alert.alert('Inicio de sesión exitoso', `Bienvenido, ${email}`);
+      await AsyncStorage.setItem('token', resultado.token);
+      await AsyncStorage.setItem('userType', resultado.userType); // Guardar el tipo de usuario
       navigation.navigate('Greenhouses'); // Navegar a la pantalla de invernaderos
     }
-    Alert.alert('Inicio de sesión exitoso', `Bienvenido, ${email}`);
+    else {
+      console.log('Error en el inicio de sesión', resultado);
+      
+    }
   };
 
   return (
