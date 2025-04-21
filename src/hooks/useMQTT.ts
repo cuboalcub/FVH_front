@@ -1,127 +1,55 @@
-import { useEffect, useState, useCallback } from "react";
-import mqtt, { MqttClient } from "mqtt";
+import { useEffect, useState } from "react";
+import mqtt from "mqtt";
 
-// Tipos para TypeScript
-type MQTTMessage = {
-  topic: string;
-  message: string;
-  timestamp: Date;
-};
+// 🔗 Reemplaza con la URL de tu broker MQTT (debe ser WebSocket)
+const MQTT_BROKER = "ws://192.168.168.151:8083/mqtt"; // Ejemplo con Mosquitto
+const TOPIC = "test/topic"; // Reemplaza con el topic que usarás
+const clientId =
+  "emqx_react_native_" + Math.random().toString(16).substring(2, 8);
+const username = "emqx_test";
+const password = "emqx_test";
+export function useMQTT() {
+    const [client, setClient] = useState<mqtt.MqttClient | null>(null);
+    const [messages, setMessages] = useState<string[]>([]);
 
-type UseMQTTOptions = {
-  brokerUrl?: string;
-  topics?: string[];
-  onMessageReceived?: (message: MQTTMessage) => void;
-};  
+    useEffect(() => {
+        // Conectar al broker
+        const mqttClient = mqtt.connect(MQTT_BROKER, {
+            clientId,
+            username,
+            password
+          });
 
-const DEFAULT_OPTIONS: UseMQTTOptions = {
-  brokerUrl: "mqtt://192.168.158.151:1883", // Servidor público Mosquitto
-  topics: ["test/topic"],
-};
-
-export function useMQTT(options?: UseMQTTOptions) {
-  const config = { ...DEFAULT_OPTIONS, ...options };
-  const [client, setClient] = useState<MqttClient | null>(null);
-  const [messages, setMessages] = useState<MQTTMessage[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "connecting" | "connected" | "error" | "disconnected"
-  >("connecting");
-  const [error, setError] = useState<string | null>(null);
-
-  // Función para publicar mensajes
-  const publish = useCallback(
-    (topic: string, message: string) => {
-      if (client?.connected) {
-        client.publish(topic, message, (err) => {
-          if (err) {
-            console.error("❌ Error al publicar:", err);
-            setError(`Publish error: ${err.message}`);
-          }
+        mqttClient.on("connect", () => {
+            console.log("✅ Conectado a MQTT");
+            mqttClient.subscribe(TOPIC, (err) => {
+                if (!err) {
+                    console.log(`📡 Suscrito a: ${TOPIC}`);
+                } else {
+                    console.error("❌ Error al suscribirse:", err);
+                }
+            });
         });
-        return true;
-      }
-      setError("Client not connected");
-      return false;
-    },
-    [client]
-  );
 
-  useEffect(() => {
-    // Configuración del cliente MQTT
-    console.log(DEFAULT_OPTIONS.brokerUrl);
-    
-    const mqttClient = mqtt.connect(DEFAULT_OPTIONS.brokerUrl || "mqtt://192.168.158.151:1883   ", {
-        protocol: "mqtt",
-      reconnectPeriod: 5000, // Intentar reconectar cada 5 segundos
-      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
-    });
-
-    setClient(mqttClient);
-    setConnectionStatus("connecting");
-
-    // Event handlers
-    mqttClient.on("connect", () => {
-      console.log("✅ Conectado a MQTT");
-      setConnectionStatus("connected");
-      setError(null);
-      
-      // Suscribirse a los topics
-      config.topics?.forEach((topic) => {
-        mqttClient.subscribe(topic, (err) => {
-          if (err) {
-            console.error(`❌ Error al suscribirse a ${topic}:`, err);
-            setError(`Subscribe error: ${err.message}`);
-          } else {
-            console.log(`📡 Suscrito a: ${topic}`);
-          }
+        // Escuchar mensajes entrantes
+        mqttClient.on("message", (topic, message) => {
+            const msg = message.toString();
+            console.log(`📩 Mensaje recibido en ${topic}: ${msg}`);
+            setMessages((prev) => [...prev, msg]); // Agregar mensaje al estado
         });
-      });
-    });
 
-    mqttClient.on("message", (topic, message) => {
-      const msg: MQTTMessage = {
-        topic,
-        message: message.toString(),
-        timestamp: new Date(),
-      };
-      
-      console.log(`📩 [${msg.timestamp.toISOString()}] ${topic}: ${msg.message}`);
-      
-      setMessages((prev) => [msg, ...prev].slice(0, 100)); // Limitar a 100 mensajes
-      
-      if (config.onMessageReceived) {
-        config.onMessageReceived(msg);
-      }
-    });
+        // Manejar errores
+        mqttClient.on("error", (err) => {
+            console.error("⚠️ Error MQTT:", err);
+        });
 
-    mqttClient.on("error", (err) => {
-      console.error("⚠️ Error MQTT:", err);
-      setConnectionStatus("error");
-      setError(err.message);
-    });
+        setClient(mqttClient);
 
-    mqttClient.on("close", () => {
-      setConnectionStatus("disconnected");
-    });
+        // Desconectar al desmontar el componente
+        return () => {
+            mqttClient.end();
+        };
+    }, []);
 
-    mqttClient.on("offline", () => {
-      setConnectionStatus("disconnected");
-    });
-
-    // Limpieza al desmontar
-    return () => {
-      if (mqttClient.connected) {
-        mqttClient.end(true); // Forzar desconexión
-      }
-    };
-  }, [config.brokerUrl, JSON.stringify(config.topics)]);
-
-  return {
-    client,
-    messages,
-    publish,
-    connectionStatus,
-    error,
-    isConnected: connectionStatus === "connected",
-  };
+    return { messages };
 }

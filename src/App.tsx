@@ -5,6 +5,7 @@ import { UserProvider } from "./components/usercontext";
 
 // Import Screens
 
+
 import SignInScreen from '../src/components/signin';
 import SignUpScreen from '../src/components/signup';
 import GreenhousesScreen from '../src/components/menuinvernaderos';
@@ -26,11 +27,8 @@ export type RootStackParamList = {
   RackDetails: { rackId: string; greenhouseId: string; name: string };
   ShelfDetails: { shelfId: string; rackId: string; greenhouseId: string };
   Config: undefined;
-  MQTT: undefined;
+  MQTT: undefined; // ➕ Agregar MQTT en la lista de rutas
   PedidosScreen: undefined;
-  ConfigUsuariosScreen: undefined;
-  SensorData: undefined;
-  Notifications: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -39,6 +37,9 @@ export default function App() {
   return (
     <UserProvider>
     <NavigationContainer>
+
+      
+
       <Stack.Navigator screenOptions={{ headerShown: true }}>
         <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Iniciar Sesión' }} />
         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Registrarse' }} />
@@ -51,6 +52,9 @@ export default function App() {
         <Stack.Screen name="ConfigUsuariosScreen" component={ConfigUsuariosScreen} />
         <Stack.Screen name= "SensorData" component={SensorDataScreen}/>
         <Stack.Screen name= "Notifications" component={LogsScreen}/>
+        
+      <Stack.Screen name="MQTTTest" component={MQTTScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
     </UserProvider>
