@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 200,
     alignItems: 'center',
+    textAlign: 'center'
   },
   adminButtonText: {
     color: 'white',

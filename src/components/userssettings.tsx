@@ -13,20 +13,52 @@ export default function ConfigUsuariosScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserRole, setNewUserRole] = useState('Usuario');
+  const [isEditing, setIsEditing] = useState(false);
+const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
-  const addUser = () => {
-    if (!newUserName) return;
 
+const addUser = () => {
+  if (!newUserName) return;
+
+  if (isEditing && editingUserId) {
+    const updatedUsers = users.map(user =>
+      user.id === editingUserId
+        ? { ...user, name: newUserName, role: newUserRole }
+        : user
+    );
+    setUsers(updatedUsers);
+  } else {
     const newUser = {
       id: Date.now().toString(),
       name: newUserName,
       role: newUserRole,
     };
     setUsers([...users, newUser]);
-    setNewUserName('');
-    setNewUserRole('Usuario');
-    setModalVisible(false);
-  };
+  }
+
+  // Reset state
+  setNewUserName('');
+  setNewUserRole('Usuario');
+  setEditingUserId(null);
+  setIsEditing(false);
+  setModalVisible(false);
+};
+
+
+  
+
+  const handleEdit = (user: { id: string; name: string; role: string }) => {
+  setNewUserName(user.name);
+  setNewUserRole(user.role);
+  setEditingUserId(user.id);
+  setIsEditing(true);
+  setModalVisible(true);
+};
+
+const handleDelete = (id: string) => {
+  const updatedUsers = users.filter(user => user.id !== id);
+  setUsers(updatedUsers);
+};
 
   return (
     <BackgroundWrapper>
@@ -39,6 +71,16 @@ export default function ConfigUsuariosScreen() {
           <View style={styles.card}>
             <Text style={styles.userText}>{item.name}</Text>
             <Text style={styles.roleText}>{item.role}</Text>
+        
+            <View style={styles.cardButtons}>
+              <TouchableOpacity onPress={() => handleEdit(item)}>
+                <Text style={styles.editButton}> Editar </Text>
+              </TouchableOpacity>
+        
+              <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                <Text style={styles.deleteButton}> X</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
@@ -135,7 +177,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
       width: '85%',
-      backgroundColor: '#fff',
+      backgroundColor: '#FBA304',
       borderRadius: 20,
       padding: 20,
     },
@@ -165,5 +207,19 @@ const styles = StyleSheet.create({
       fontSize: 18,
       color: '#008000',
     },
+    cardButtons: {
+      flexDirection: 'row',
+      marginTop: 10,
+      justifyContent: 'space-between',
+    },
+    editButton: {
+      color: '#007BFF',
+      fontWeight: 'bold',
+    },
+    deleteButton: {
+      color: '#FF0000',
+      fontWeight: 'bold',
+    },
+    
   });
   

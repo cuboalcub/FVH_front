@@ -42,6 +42,16 @@ const PedidosScreen = () => {
     setModalVisible(false);
   };
 
+  const handleDelete = (id: string) => {
+    setOrders(orders.filter(order => order.id !== id));
+  };
+  
+  const handleEdit = (order: { id: string, title: string, items: string[] }) => {
+    setOrderItems(order.items);       
+    setModalVisible(true);              
+  };
+  
+
   return (
     <BackgroundWrapper>
       <Text style={styles.header}>Pedidos</Text>
@@ -51,7 +61,17 @@ const PedidosScreen = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.orderCard}>
-            <Text style={styles.orderTitle}>{item.title}</Text>
+            <View style={styles.cardHeader}>
+              <Text style={styles.orderTitle}>{item.title}</Text>
+              <View style={styles.cardButtons}>
+                <TouchableOpacity onPress={() => handleEdit(item)}>
+                  <Text style={styles.editButton}>Editar </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                  <Text style={styles.deleteButton}>X</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
             {item.items.map((itemText, index) => (
               <Text key={index} style={styles.orderItem}>{itemText}</Text>
             ))}
@@ -179,7 +199,27 @@ const styles = StyleSheet.create({
     marginTop: 10, padding: 10,
     backgroundColor: 'red', borderRadius: 5
   },
+
   closeText: { color: 'white', fontWeight: 'bold' },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  editButton: {
+    fontSize: 16,
+    color: '#007AFF',
+    marginRight: 10,
+  },
+  deleteButton: {
+    fontSize: 16,
+    color: '#FF3B30',
+  },
+  
 });
 
 export default PedidosScreen;
