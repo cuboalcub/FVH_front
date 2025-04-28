@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -8,34 +8,46 @@ import CustomBottomBar from './barraInferior';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 
-export default function RackDetailsScreen ({ route, navigation }: Props) {
+type Rack = {
+  id: string;
+  name: string;
+};
+
+type Tray = {
+  id: string;
+  crop: string;
+  temp: string;
+  humidity: string;
+};
+
+export default function RackDetailsScreen({ route, navigation }: Props) {
   const { rackId, greenhouseId, name } = route.params;
 
-  const racks = [
-    { id: '1', name: 'Rack 1' },
-    { id: '2', name: 'Rack 2' }
-  ];
+  const [racks, setRacks] = useState<Rack[]>([]);
+  const [trays, setTrays] = useState<Tray[]>([]);
 
-  const currentIndex = racks.findIndex(rack => rack.id === rackId);
+  useEffect(() => {
+    async function fetchData() {
+      const fetchedRacks = await getRacksForGreenhouse(greenhouseId);
+      setRacks(fetchedRacks);
 
+      const fetchedTrays = await getTraysForRack(greenhouseId, rackId);
+      setTrays(fetchedTrays);
+    }
+
+    fetchData();
+  }, [greenhouseId, rackId]);
+
+  const currentIndex = racks.findIndex((rack) => rack.id === rackId);
   const prevRack = currentIndex > 0 ? racks[currentIndex - 1] : null;
   const nextRack = currentIndex < racks.length - 1 ? racks[currentIndex + 1] : null;
 
-  const trays = [
-    { id: '1', crop: 'Maíz', temp: '22°C', humidity: '84%' },
-    { id: '2', crop: 'Maíz', temp: '22°C', humidity: '84%' },
-    { id: '3', crop: 'Maíz', temp: '22°C', humidity: '84%' },
-    { id: '4', crop: 'Cebada', temp: '22°C', humidity: '83%' },
-    { id: '5', crop: 'Cebada', temp: '22°C', humidity: '64%' },
-    { id: '6', crop: 'Centeno', temp: '22°C', humidity: '84%' },
-  ];
-
   return (
     <BackgroundWrapper>
-      {/* Header with navigation arrows */}
+      {/* Header*/}
       <View style={styles.header}>
-        {/* Navigate to Previous Rack */}
-        <TouchableOpacity 
+        {/* Rack Previo*/}
+        <TouchableOpacity
           onPress={() => {
             if (prevRack) {
               navigation.replace('RackDetails', {
@@ -45,19 +57,19 @@ export default function RackDetailsScreen ({ route, navigation }: Props) {
               });
             }
           }}
-          disabled={!prevRack} // Disable if no previous rack
+          disabled={!prevRack}
         >
-          <Ionicons 
-            name="chevron-back-circle" 
-            size={32} 
-            color={prevRack ? 'black' : 'gray'} 
+          <Ionicons
+            name="chevron-back-circle"
+            size={32}
+            color={prevRack ? 'black' : 'gray'}
           />
         </TouchableOpacity>
 
         <Text style={styles.title}>{name}</Text>
 
-        {/* Navigate to Next Rack */}
-        <TouchableOpacity 
+        {/* Siguiente Rack */}
+        <TouchableOpacity
           onPress={() => {
             if (nextRack) {
               navigation.replace('RackDetails', {
@@ -69,15 +81,15 @@ export default function RackDetailsScreen ({ route, navigation }: Props) {
           }}
           disabled={!nextRack}
         >
-          <Ionicons 
-            name="chevron-forward-circle" 
-            size={32} 
-            color={nextRack ? 'black' : 'gray'} 
+          <Ionicons
+            name="chevron-forward-circle"
+            size={32}
+            color={nextRack ? 'black' : 'gray'}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Rack details */}
+      {/* Detalles Rack */}
       <View style={styles.detailsContainer}>
         <Text style={styles.detailsTitle}>Datos de Rack</Text>
         <Text>- Información 1</Text>
@@ -85,12 +97,12 @@ export default function RackDetailsScreen ({ route, navigation }: Props) {
         <Text>- Información 3</Text>
       </View>
 
-      {/* Trays Grid */}
+      {/* Charolas */}
       <View style={styles.trayContainer}>
         <FlatList
           data={trays}
           keyExtractor={(item) => item.id}
-          numColumns={3} // 3 items per row
+          numColumns={3}
           renderItem={({ item }) => (
             <View style={styles.trayCard}>
               <Text style={styles.trayText}>{item.crop}</Text>
@@ -101,16 +113,61 @@ export default function RackDetailsScreen ({ route, navigation }: Props) {
         />
       </View>
 
-      {/* Footer with Home & Settings */}
+      {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('Config')}>
           <Ionicons name="home" size={32} color="white" />
         </TouchableOpacity>
         <Text style={styles.footerText}>Ajustes</Text>
       </View>
-      <CustomBottomBar/>
+
+      <CustomBottomBar />
     </BackgroundWrapper>
   );
+}
+
+/** Mock datos de API para Racks  */
+async function getRacksForGreenhouse(greenhouseId: string): Promise<Rack[]> {
+  if (greenhouseId === '1') {
+    return [
+      { id: '1', name: 'Rack A' },
+      { id: '2', name: 'Rack B' },
+    ];
+  } else if (greenhouseId === '2') {
+    return [
+      { id: '3', name: 'Rack X' },
+      { id: '2', name: 'Rack Y' },
+    ];
+  } else if (greenhouseId === '3') {
+    return [
+      { id: '1', name: 'Rack X' },
+      { id: '3', name: 'Rack Y' },
+    ];
+  }
+   else {
+    return [];
+  }
+}
+
+async function getTraysForRack(greenhouseId: string, rackId: string): Promise<Tray[]> {
+  if (rackId === '1') {
+    return [
+      { id: '1', crop: 'Maíz', temp: '22°C', humidity: '84%' },
+      { id: '2', crop: 'Cebada', temp: '22°C', humidity: '83%' },
+    ];
+  } else if (rackId === '2') {
+    return [
+      { id: '3', crop: 'Centeno', temp: '23°C', humidity: '78%' },
+      { id: '4', crop: 'Avena', temp: '24°C', humidity: '80%' },
+    ];
+  } else if (rackId === '3') {
+    return [
+      { id: '5', crop: 'Trigo', temp: '25°C', humidity: '75%' },
+      { id: '6', crop: 'Sorgo', temp: '22°C', humidity: '70%' },
+    ];
+  } else {
+    return [];
+  }
 }
 
 const styles = StyleSheet.create({
@@ -186,4 +243,3 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
-

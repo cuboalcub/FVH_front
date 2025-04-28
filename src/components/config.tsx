@@ -14,7 +14,8 @@ const ConfigScreen = () => {
     datasets: [{ data: [0, 0, 0, 0, 0, 0, 0] }]
   });
 
-  // Fetch data from API
+  // Mock api para config
+
   useEffect(() => {
     axios.get('mqtt://192.168.158.151:1883') 
       .then(response => {
@@ -26,7 +27,7 @@ const ConfigScreen = () => {
       .catch(error => console.error('Error fetching data:', error));
   }, []);
 
-  // Handlers for buttons
+  // Botones
   const activateSprinklers = () => alert('Aspersores Activados');
   const activateLights = () => alert('Luces Activadas');
 

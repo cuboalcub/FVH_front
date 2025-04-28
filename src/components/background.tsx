@@ -4,7 +4,7 @@ import { View, ImageBackground, StyleSheet } from 'react-native';
 const BackgroundWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <ImageBackground 
-      source={require('../../assets/bg.png')}  // Change path as needed
+      source={require('../../assets/bg.png')} 
       style={styles.background}
       resizeMode="cover"
     >

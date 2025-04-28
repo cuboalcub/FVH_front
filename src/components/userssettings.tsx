@@ -44,9 +44,6 @@ const addUser = () => {
   setModalVisible(false);
 };
 
-
-  
-
   const handleEdit = (user: { id: string; name: string; role: string }) => {
   setNewUserName(user.name);
   setNewUserRole(user.role);
@@ -89,7 +86,6 @@ const handleDelete = (id: string) => {
         <Text style={styles.addText}>+</Text>
       </TouchableOpacity>
 
-      {/* Create User Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

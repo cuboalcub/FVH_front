@@ -11,9 +11,8 @@ export default function LogsScreen() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Simulated fetch for now, replace this with real API call
+  // Notificaciones simuladas
   useEffect(() => {
-    // Simulate delay and load logs
     setTimeout(() => {
       setLogs([
         {
@@ -44,7 +43,7 @@ export default function LogsScreen() {
   );
 
   const formatMessage = (msg: string) => {
-    // Render bold usernames manually
+    
     const parts = msg.split(/\*\*(.*?)\*\*/g);
     return (
       <Text>

@@ -15,6 +15,7 @@ const PedidosScreen = () => {
   const [customSeed, setCustomSeed] = useState('');
   const [quantity, setQuantity] = useState('');
   const [orderItems, setOrderItems] = useState<string[]>([]);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
   const seedOptions = ['trigo', 'maíz', 'cebada', 'other'];
 
@@ -29,28 +30,45 @@ const PedidosScreen = () => {
     setSelectedSeed('trigo');
   };
 
-  const createOrder = () => {
+  const removeItemFromOrder = (index: number) => {
+    const updatedItems = [...orderItems];
+    updatedItems.splice(index, 1);
+    setOrderItems(updatedItems);
+  };
+
+  const createOrUpdateOrder = () => {
     if (orderItems.length === 0) return;
 
-    const newOrder = {
-      id: (orders.length + 1).toString(),
-      title: `Pedido #${orders.length + 1}`,
-      items: orderItems
-    };
-    setOrders([...orders, newOrder]);
+    if (editingOrderId) {
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.id === editingOrderId ? { ...order, items: orderItems } : order
+        )
+      );
+    } else {
+      const newOrder = {
+        id: (orders.length + 1).toString(),
+        title: `Pedido #${orders.length + 1}`,
+        items: orderItems
+      };
+      setOrders([...orders, newOrder]);
+    }
+
+    // Reset modal state
     setOrderItems([]);
+    setEditingOrderId(null);
     setModalVisible(false);
+  };
+
+  const handleEdit = (order: { id: string, title: string, items: string[] }) => {
+    setOrderItems(order.items);
+    setEditingOrderId(order.id);
+    setModalVisible(true);
   };
 
   const handleDelete = (id: string) => {
     setOrders(orders.filter(order => order.id !== id));
   };
-  
-  const handleEdit = (order: { id: string, title: string, items: string[] }) => {
-    setOrderItems(order.items);       
-    setModalVisible(true);              
-  };
-  
 
   return (
     <BackgroundWrapper>
@@ -65,7 +83,7 @@ const PedidosScreen = () => {
               <Text style={styles.orderTitle}>{item.title}</Text>
               <View style={styles.cardButtons}>
                 <TouchableOpacity onPress={() => handleEdit(item)}>
-                  <Text style={styles.editButton}>Editar </Text>
+                  <Text style={styles.editButton}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(item.id)}>
                   <Text style={styles.deleteButton}>X</Text>
@@ -79,7 +97,11 @@ const PedidosScreen = () => {
         )}
       />
 
-      <TouchableOpacity style={styles.plusButton} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={styles.plusButton} onPress={() => {
+        setEditingOrderId(null);
+        setOrderItems([]);
+        setModalVisible(true);
+      }}>
         <Text style={styles.plusText}>+</Text>
       </TouchableOpacity>
 
@@ -91,9 +113,8 @@ const PedidosScreen = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Crear pedido</Text>
+            <Text style={styles.modalTitle}>{editingOrderId ? 'Editar Pedido' : 'Crear Pedido'}</Text>
 
-            {/* Quantity Input */}
             <TextInput
               placeholder="Cantidad (kg)"
               style={styles.input}
@@ -102,11 +123,10 @@ const PedidosScreen = () => {
               onChangeText={setQuantity}
             />
 
-            {/* Seed Type Picker */}
             <View style={styles.input}>
               <Picker
                 selectedValue={selectedSeed}
-                onValueChange={(itemValue: React.SetStateAction<string>) => setSelectedSeed(itemValue)}
+                onValueChange={(itemValue) => setSelectedSeed(itemValue)}
               >
                 {seedOptions.map((seed) => (
                   <Picker.Item label={seed} value={seed} key={seed} />
@@ -114,7 +134,6 @@ const PedidosScreen = () => {
               </Picker>
             </View>
 
-            {/* Custom Seed Input */}
             {selectedSeed === 'other' && (
               <TextInput
                 placeholder="Otra semilla"
@@ -124,27 +143,30 @@ const PedidosScreen = () => {
               />
             )}
 
-            {/* Add Item Button */}
             <TouchableOpacity style={styles.addItemButton} onPress={addItemToOrder}>
               <Text style={styles.addItemText}>Agregar ítem</Text>
             </TouchableOpacity>
 
-            {/* Show Current Items */}
             {orderItems.map((item, index) => (
-              <Text key={index} style={styles.orderItem}>{item}</Text>
+              <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                <Text style={styles.orderItem}>{item}</Text>
+                <TouchableOpacity onPress={() => removeItemFromOrder(index)}>
+                  <Text style={{ color: 'red' }}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
             ))}
 
-            {/* Confirm Button */}
-            <TouchableOpacity style={styles.createButton} onPress={createOrder}>
-              <Text style={styles.createText}>Crear Pedido</Text>
+            <TouchableOpacity style={styles.createButton} onPress={createOrUpdateOrder}>
+              <Text style={styles.createText}>{editingOrderId ? 'Guardar Cambios' : 'Crear Pedido'}</Text>
             </TouchableOpacity>
 
-            {/* Close Button */}
-            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => {
+              setEditingOrderId(null);
+              setOrderItems([]);
+              setModalVisible(false);
+            }}>
               <Text style={styles.closeText}>X</Text>
             </TouchableOpacity>
-
-            
           </View>
         </View>
       </Modal>
@@ -154,27 +176,58 @@ const PedidosScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  orderCard: { backgroundColor: '#ffc64d', padding: 15, marginBottom: 10, borderRadius: 10 },
-  orderTitle: { fontSize: 18, fontWeight: 'bold' },
-  orderItem: { fontSize: 14, color: '#333' },
-
-  plusButton: {
-    position: 'absolute', bottom: 20, right: 20,
-    backgroundColor: 'black', width: 60, height: 60,
-    borderRadius: 30, justifyContent: 'center', alignItems: 'center',
+  header: { 
+    fontSize: 24, 
+    fontWeight: 'bold', 
+    marginBottom: 20, 
+    textAlign: 'center' 
   },
-  plusText: { fontSize: 30, color: 'white', fontWeight: 'bold' },
-
+  orderCard: { 
+    backgroundColor: '#ffc64d', 
+    padding: 15, 
+    marginBottom: 10, 
+    borderRadius: 10 
+  },
+  orderTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold' 
+  },
+  orderItem: { 
+    fontSize: 14, 
+    color: '#333' 
+  },
+  plusButton: {
+    position: 'absolute', 
+    bottom: 20, 
+    right: 20,
+    backgroundColor: 'black', 
+    width: 60, height: 60,
+    borderRadius: 30, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  plusText: { fontSize: 30, 
+    color: 'white', 
+    fontWeight: 'bold' 
+  },
   modalContainer: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '80%', backgroundColor: '#ffb647',
-    padding: 20, borderRadius: 10, alignItems: 'center',
+    width: '80%', 
+    backgroundColor: '#ffb647',
+    padding: 20, 
+    borderRadius: 10, 
+    alignItems: 'center',
   },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  modalTitle: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    marginBottom: 10
+   },
   input: {
     width: '100%',
     borderBottomWidth: 1,
@@ -189,18 +242,30 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 5
   },
-  addItemText: { color: 'white', fontWeight: 'bold' },
+  addItemText: { 
+    color: 'white', 
+    fontWeight: 'bold' 
+  },
   createButton: {
-    marginTop: 10, padding: 10,
-    backgroundColor: 'blue', borderRadius: 5
+    marginTop: 10, 
+    padding: 10,
+    backgroundColor: 'blue', 
+    borderRadius: 5
   },
-  createText: { color: 'white', fontWeight: 'bold' },
+  createText: { 
+    color: 'white', 
+    fontWeight: 'bold' 
+  },
   closeButton: {
-    marginTop: 10, padding: 10,
-    backgroundColor: 'red', borderRadius: 5
+    marginTop: 10, 
+    padding: 10,
+    backgroundColor: 'red', 
+    borderRadius: 5
   },
-
-  closeText: { color: 'white', fontWeight: 'bold' },
+  closeText: { 
+    color: 'white', 
+    fontWeight: 'bold' 
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -219,7 +284,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FF3B30',
   },
-  
 });
 
 export default PedidosScreen;

@@ -32,18 +32,18 @@ export default function GreenhousesScreen({ navigation }: Props) {
         ))}
       </View>
 
-      {/* Admin-only button */}
+      {/* Botones de admin */}
       {userType === 'admin' && (
         <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('ConfigUsuariosScreen')}>
           <Text style={styles.adminButtonText}>Usuario</Text>
         </TouchableOpacity>
-
       )}
       {userType === 'admin' && (
         <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('SensorData')}>
           <Text style={styles.adminButtonText}> Configuracion de admin </Text>
         </TouchableOpacity>
       )}
+      
 
       <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('PedidosScreen')}>
         <Text style={styles.adminButtonText}> Pedidos </Text>

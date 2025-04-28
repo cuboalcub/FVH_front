@@ -10,8 +10,8 @@ export default function SensorDataScreen() {
     const [chartData, setChartData] = useState({
         labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
         datasets: [{ data: [0, 0, 0, 0, 0, 0, 0] }]
-      });
-      
+    });
+
     return (
 
         <BackgroundWrapper>
@@ -48,12 +48,12 @@ export default function SensorDataScreen() {
                 }}
                 style={styles.chart}
             />
-            {/* Button */}
+            {/* Boton calibracion */}
             <TouchableOpacity style={styles.button} onPress={handleCalibration}>
                 <Text style={styles.buttonText}>Realizar prueba de calibración</Text>
             </TouchableOpacity>
 
-<CustomBottomBar/>
+            <CustomBottomBar />
         </BackgroundWrapper>
     );
 }

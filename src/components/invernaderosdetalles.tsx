@@ -10,13 +10,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'GreenhouseDetails'>;
 export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
   const { greenhouseId, name } = route.params;
 
-  const racks = [
-    { id: '1', name: 'Rack 1' },
-    { id: '2', name: 'Rack 1' },
-  ];
+  const racks = getRacksForGreenhouse(greenhouseId);
 
   return (
-   <BackgroundWrapper>
+    <BackgroundWrapper>
       <Text style={styles.title}>{name}</Text>
       <Text style={styles.subtitle}>Racks en {name}</Text>
       {racks.map((rack) => (
@@ -29,9 +26,30 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
           <Text style={styles.rackText}>{rack.name}</Text>
         </TouchableOpacity>
       ))}
-      <CustomBottomBar/>
+      <CustomBottomBar />
     </BackgroundWrapper>
   );
+}
+
+function getRacksForGreenhouse(greenhouseId: string) {
+  if (greenhouseId === '1') {
+    return [
+      { id: '1', name: 'Rack A' },
+      { id: '2', name: 'Rack B' },
+    ];
+  } else if (greenhouseId === '2') {
+    return [
+      { id: '3', name: 'Rack X' },
+      { id: '2', name: 'Rack Y' },
+    ];
+  } else if (greenhouseId === '3') {
+    return [
+      { id: '1', name: 'Rack 1' },
+      { id: '3', name: 'Rack 2' },
+    ];
+  } else {
+    return [];
+  }
 }
 
 const styles = StyleSheet.create({
@@ -52,7 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   rackButton: {
-   alignItems: 'center',
+    alignItems: 'center',
   },
   rackText: {
     color: '#fff',
