@@ -36,7 +36,6 @@ const addUser = () => {
     setUsers([...users, newUser]);
   }
 
-  // Reset state
   setNewUserName('');
   setNewUserRole('Usuario');
   setEditingUserId(null);

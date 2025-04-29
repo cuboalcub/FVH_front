@@ -225,11 +225,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    backgroundColor: '#5D4037',
     width: '100%',
     padding: 15,
     position: 'absolute',
-    bottom: 0,
+    bottom: 100,
     alignItems: 'center',
   },
   homeButton: {

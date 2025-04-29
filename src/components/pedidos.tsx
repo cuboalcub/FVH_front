@@ -23,7 +23,7 @@ const PedidosScreen = () => {
     const seed = selectedSeed === 'other' ? customSeed.trim() : selectedSeed;
     if (!seed || !quantity) return;
 
-    const newItem = `${quantity}kg ${seed}`;
+    const newItem = `${quantity} kg ${seed}`;
     setOrderItems([...orderItems, newItem]);
     setQuantity('');
     setCustomSeed('');
@@ -54,7 +54,6 @@ const PedidosScreen = () => {
       setOrders([...orders, newOrder]);
     }
 
-    // Reset modal state
     setOrderItems([]);
     setEditingOrderId(null);
     setModalVisible(false);
@@ -111,16 +110,19 @@ const PedidosScreen = () => {
         transparent
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalContainer} pointerEvents="box-none">
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{editingOrderId ? 'Editar Pedido' : 'Crear Pedido'}</Text>
+            <Text style={styles.modalTitle}>{editingOrderId ? 'Editar Pedido' : 'Crear Pedido'} </Text>
 
             <TextInput
               placeholder="Cantidad (kg)"
               style={styles.input}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               value={quantity}
-              onChangeText={setQuantity}
+              onChangeText={(text) => {
+                const formattedText = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                setQuantity(formattedText);
+              }}
             />
 
             <View style={styles.input}>
@@ -176,51 +178,52 @@ const PedidosScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  header: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    marginBottom: 20, 
-    textAlign: 'center' 
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center'
   },
-  orderCard: { 
-    backgroundColor: '#ffc64d', 
-    padding: 15, 
-    marginBottom: 10, 
-    borderRadius: 10 
+  orderCard: {
+    backgroundColor: '#ffc64d',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 10
   },
-  orderTitle: { 
-    fontSize: 18, 
-    fontWeight: 'bold' 
+  orderTitle: {
+    fontSize: 18,
+    fontWeight: 'bold'
   },
-  orderItem: { 
-    fontSize: 14, 
-    color: '#333' 
+  orderItem: {
+    fontSize: 14,
+    color: '#333'
   },
   plusButton: {
-    position: 'absolute', 
-    bottom: 20, 
+    position: 'absolute',
+    bottom: 100,
     right: 20,
-    backgroundColor: 'black', 
+    backgroundColor: 'black',
     width: 60, height: 60,
-    borderRadius: 30, 
-    justifyContent: 'center', 
+    borderRadius: 30,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  plusText: { fontSize: 30, 
-    color: 'white', 
-    fontWeight: 'bold' 
+  plusText: {
+    fontSize: 30,
+    color: 'white',
+    fontWeight: 'bold'
   },
   modalContainer: {
-    flex: 1, 
-    justifyContent: 'center', 
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '80%', 
+    width: '80%',
     backgroundColor: '#ffb647',
-    padding: 20, 
-    borderRadius: 10, 
+    padding: 20,
+    borderRadius: 10,
     alignItems: 'center',
   },
   modalTitle: { 
