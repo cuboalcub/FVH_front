@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
@@ -8,12 +8,23 @@ import BackgroundWrapper from './background';
 import { login } from '../utils/authservice'; // Asegúrate de importar tu servicio de autenticación
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 export default function SignInScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { setUserType } = useUser();
+
+  // 🔥 Nuevo useEffect para revisar el token en storage
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        navigation.navigate('Greenhouses');
+      }
+    };
+
+    checkToken();
+  }, []);
 
   const handleSignIn = async () => {
     if (!email || !password) {
@@ -21,18 +32,20 @@ export default function SignInScreen() {
       return;
     }
 
-    const resultado =  await login(email, password)
+    const resultado = await login(email, password);
     console.log('resultado', resultado);
     
     if (resultado.status === 200) {
       Alert.alert('Inicio de sesión exitoso', `Bienvenido, ${email}`);
       await AsyncStorage.setItem('token', resultado.token);
-      await AsyncStorage.setItem('userType', resultado.userType); // Guardar el tipo de usuario
-      navigation.navigate('Greenhouses'); // Navegar a la pantalla de invernaderos
-    }
-    else {
+    
+      const userType = resultado.userType === true ? 'admin' : 'user';
+      setUserType(userType);
+      await AsyncStorage.setItem('userType', userType);
+    
+      navigation.navigate('Greenhouses');
+    } else {
       console.log('Error en el inicio de sesión', resultado);
-      
     }
   };
 
@@ -64,13 +77,13 @@ export default function SignInScreen() {
       <TouchableOpacity style={styles.button} onPress={handleSignIn}>
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
-     
+
       <Button onPress={() => navigation.navigate('SignUp')} style={{ marginTop: 20 }}>
         Aun no tienes cuenta? Crea una cuenta
       </Button>
 
-   {/* Vista Cliente */}
-   <Button
+      {/* Vista Cliente */}
+      <Button
         onPress={() => {
           setUserType('user');
           navigation.navigate('Greenhouses');
@@ -100,7 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FFA500', 
+    backgroundColor: '#FFA500',
   },
   title: {
     fontSize: 24,
