@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-
+import CustomBottomBar from './barraInferior';
 interface LogItem {
   id: string;
   time: string;
@@ -76,12 +76,8 @@ export default function LogsScreen() {
         />
       )}
 
-      {/* Optional bottom nav placeholder */}
-      <View style={styles.navBar}>
-        <Text style={styles.navItem}>📦 Pedidos</Text>
-        <Text style={styles.navItem}>🏠</Text>
-        <Text style={styles.navItem}>⚙️ Ajustes</Text>
-      </View>
+      <CustomBottomBar/>
+
     </View>
   );
 }

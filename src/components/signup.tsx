@@ -4,14 +4,17 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackgroundWrapper from './background';
+import { signup } from '../utils/authservice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignUpScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
@@ -22,6 +25,13 @@ export default function SignUpScreen() {
       return;
     }
 
+    const resultado = await signup(email, password)
+    if (resultado.status ===200) {
+      Alert.alert('inicio de sesion exitoso', `Bienvenido, ${email}`);
+      navigation.navigate('SignIn')
+
+    }
+
     // Aquí va la lógica de registro
     Alert.alert('Registro exitoso', `Bienvenido, ${email}`);
   };
@@ -29,7 +39,14 @@ export default function SignUpScreen() {
   return (
     <BackgroundWrapper>
       <Text style={styles.title}>Crear Cuenta</Text>
-
+<Text style={styles.label}>Nombre</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        value={nombre}
+        onChangeText={setNombre}
+        autoCapitalize="none"
+      />
 <Text style={styles.label}>Correo Electrónico</Text>
       <TextInput
         style={styles.input}
@@ -58,10 +75,8 @@ export default function SignUpScreen() {
 <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Crear cuenta</Text>
       </TouchableOpacity>
-
           <Button onPress={() => navigation.navigate('SignIn') } style={{ marginTop: 20 }} >
           ¿Ya tienes cuenta? Inicia sesión aquí </Button>
-  
     </BackgroundWrapper>
   );
 }
@@ -73,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FFA500', // Orange background
+    backgroundColor: '#FFA500',
   },
   title: {
     fontSize: 24,

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { LineChart } from 'react-native-chart-kit';
 import axios from 'axios';
 import BackgroundWrapper from './background';
+import CustomBottomBar from './barraInferior';
 
 
 
@@ -56,6 +57,8 @@ const ConfigScreen = () => {
       <TouchableOpacity style={styles.button} onPress={activateLights}>
         <Text style={styles.buttonText}>Activar Luces</Text>
       </TouchableOpacity>
+
+      <CustomBottomBar/>
     </BackgroundWrapper>
   );
 };

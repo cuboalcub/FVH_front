@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import BackgroundWrapper from './background';
 import { LineChart } from 'react-native-chart-kit';
+import CustomBottomBar from './barraInferior';
 
 export default function SensorDataScreen() {
     const handleCalibration = () => alert('Calibracion realizada');
@@ -52,6 +53,7 @@ export default function SensorDataScreen() {
                 <Text style={styles.buttonText}>Realizar prueba de calibración</Text>
             </TouchableOpacity>
 
+<CustomBottomBar/>
         </BackgroundWrapper>
     );
 }
