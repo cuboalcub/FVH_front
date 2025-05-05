@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Animated, ScrollView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
 
@@ -11,6 +11,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 type Rack = {
   id: string;
   name: string;
+  status: 'optimal' | 'warning' | 'critical';
 };
 
 type Tray = {
@@ -18,133 +19,222 @@ type Tray = {
   crop: string;
   temp: string;
   humidity: string;
+  growthStage: number;
+  lastWatered: string;
 };
 
 export default function RackDetailsScreen({ route, navigation }: Props) {
   const { rackId, greenhouseId, name } = route.params;
-
   const [racks, setRacks] = useState<Rack[]>([]);
   const [trays, setTrays] = useState<Tray[]>([]);
+  const [selectedTray, setSelectedTray] = useState<Tray | null>(null);
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       const fetchedRacks = await getRacksForGreenhouse(greenhouseId);
       setRacks(fetchedRacks);
 
       const fetchedTrays = await getTraysForRack(greenhouseId, rackId);
       setTrays(fetchedTrays);
-    }
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    };
 
     fetchData();
+
+    return () => fadeAnim.setValue(0);
   }, [greenhouseId, rackId]);
 
-  const currentIndex = racks.findIndex((rack) => rack.id === rackId);
+  const currentIndex = racks.findIndex(rack => rack.id === rackId);
   const prevRack = currentIndex > 0 ? racks[currentIndex - 1] : null;
   const nextRack = currentIndex < racks.length - 1 ? racks[currentIndex + 1] : null;
 
+  const getStatusColor = (status: Rack['status'] | undefined) => {
+    switch(status) {
+      case 'optimal': return 'bg-green-500';
+      case 'warning': return 'bg-yellow-500';
+      case 'critical': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
   return (
     <BackgroundWrapper>
-      {/* Header*/}
-      <View style={styles.header}>
-        {/* Rack Previo*/}
-        <TouchableOpacity
-          onPress={() => {
-            if (prevRack) {
-              navigation.replace('RackDetails', {
+      <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+        {/* Header with navigation and status */}
+        <View className="flex-row justify-between items-center px-4 pt-6 pb-4 bg-white/10">
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            className="p-2"
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+
+          <View className="items-center">
+  <Text className="text-xl font-bold text-white">{name}</Text>
+  <View className={`${getStatusColor(racks.find(r => r.id === rackId)?.status || 'optimal')} px-3 py-1 rounded-full mt-1`}>
+    <Text className="text-white text-xs font-medium">
+      {racks.find(r => r.id === rackId)?.status.toUpperCase() || 'N/A'}
+    </Text>
+  </View>
+</View>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Config')}
+            className="p-2"
+          >
+            <Ionicons name="settings" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+          {/* Rack navigation controls */}
+          <View className="flex-row justify-between items-center my-4">
+            <TouchableOpacity
+              onPress={() => prevRack && navigation.replace('RackDetails', {
                 rackId: prevRack.id,
                 greenhouseId,
                 name: prevRack.name,
-              });
-            }
-          }}
-          disabled={!prevRack}
-        >
-          <Ionicons
-            name="chevron-back-circle"
-            size={32}
-            color={prevRack ? 'black' : 'gray'}
-          />
-        </TouchableOpacity>
+              })}
+              className={`flex-row items-center ${!prevRack ? 'opacity-30' : ''}`}
+              disabled={!prevRack}
+            >
+              <Ionicons name="chevron-back" size={20} color="white" />
+              <Text className="text-white ml-1">{prevRack?.name || 'N/A'}</Text>
+            </TouchableOpacity>
 
-        <Text style={styles.title}>{name}</Text>
-
-        {/* Siguiente Rack */}
-        <TouchableOpacity
-          onPress={() => {
-            if (nextRack) {
-              navigation.replace('RackDetails', {
+            <TouchableOpacity
+              onPress={() => nextRack && navigation.replace('RackDetails', {
                 rackId: nextRack.id,
                 greenhouseId,
                 name: nextRack.name,
-              });
-            }
-          }}
-          disabled={!nextRack}
-        >
-          <Ionicons
-            name="chevron-forward-circle"
-            size={32}
-            color={nextRack ? 'black' : 'gray'}
-          />
-        </TouchableOpacity>
-      </View>
+              })}
+              className={`flex-row items-center ${!nextRack ? 'opacity-30' : ''}`}
+              disabled={!nextRack}
+            >
+              <Text className="text-white mr-1">{nextRack?.name || 'N/A'}</Text>
+              <Ionicons name="chevron-forward" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
 
-      {/* Detalles Rack */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.detailsTitle}>Datos de Rack</Text>
-        <Text>- Información 1</Text>
-        <Text>- Información 2</Text>
-        <Text>- Información 3</Text>
-      </View>
-
-      {/* Charolas */}
-      <View style={styles.trayContainer}>
-        <FlatList
-          data={trays}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          renderItem={({ item }) => (
-            <View style={styles.trayCard}>
-              <Text style={styles.trayText}>{item.crop}</Text>
-              <Text style={styles.traySubText}>T {item.temp}</Text>
-              <Text style={styles.traySubText}>H {item.humidity}</Text>
+          {/* Rack statistics */}
+          <View className="bg-white/10 rounded-xl p-4 mb-6 border border-white/20">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-bold text-white">Estadísticas del Rack</Text>
+              <MaterialCommunityIcons name="chart-bar" size={24} color="white" />
             </View>
-          )}
-        />
-      </View>
+            
+            <View className="flex-row justify-between">
+              <View className="items-center">
+                <Text className="text-white font-bold text-xl">{trays.length}</Text>
+                <Text className="text-white/80 text-xs">Charolas</Text>
+              </View>
+              
+              <View className="items-center">
+                <Text className="text-white font-bold text-xl">
+                  {trays.reduce((acc, tray) => acc + parseInt(tray.temp), 0) / trays.length || 0}°C
+                </Text>
+                <Text className="text-white/80 text-xs">Temp. promedio</Text>
+              </View>
+              
+              <View className="items-center">
+                <Text className="text-white font-bold text-xl">
+                  {trays.reduce((acc, tray) => acc + parseInt(tray.humidity), 0) / trays.length || 0}%
+                </Text>
+                <Text className="text-white/80 text-xs">Humedad promedio</Text>
+              </View>
+            </View>
+          </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('Config')}>
-          <Ionicons name="home" size={32} color="white" />
+          {/* Trays grid */}
+          <Text className="text-lg font-bold text-white mb-3">Charolas ({trays.length})</Text>
+          <View className="flex-row flex-wrap justify-between mb-24">
+            {trays.map((tray) => (
+              <TouchableOpacity
+                key={tray.id}
+                className={`w-[48%] mb-4 ${selectedTray?.id === tray.id ? 'border-2 border-amber-400' : ''}`}
+                onPress={() => setSelectedTray(tray)}
+                activeOpacity={0.7}
+              >
+                <View className="bg-white/10 p-3 rounded-xl">
+                  <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-white font-bold">{tray.crop}</Text>
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons 
+                        name="water" 
+                        size={14} 
+                        color="#60a5fa" 
+                        style={{ marginRight: 4 }} 
+                      />
+                      <Text className="text-blue-300 text-xs">{tray.lastWatered}</Text>
+                    </View>
+                  </View>
+                  
+                  <View className="flex-row justify-between">
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons name="thermometer" size={14} color="#f87171" />
+                      <Text className="text-white text-xs ml-1">{tray.temp}</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons name="water-percent" size={14} color="#60a5fa" />
+                      <Text className="text-white text-xs ml-1">{tray.humidity}</Text>
+                    </View>
+                  </View>
+                  
+                  <View className="mt-2">
+                    <View className="w-full bg-gray-600 rounded-full h-1.5">
+                      <View 
+                        className="bg-amber-400 h-1.5 rounded-full" 
+                        style={{ width: `${(tray.growthStage / 5) * 100}%` }}
+                      />
+                    </View>
+                    <Text className="text-white/80 text-xs mt-1">
+                      Etapa {tray.growthStage}/5
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
+        {/* Floating action button */}
+        <TouchableOpacity 
+          className="absolute bottom-28 right-5 bg-amber-500 p-4 rounded-full shadow-xl"
+          onPress={() => navigation.navigate('AddTray', { rackId, greenhouseId })}
+        >
+          <MaterialCommunityIcons name="plus" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.footerText}>Ajustes</Text>
-      </View>
 
-      <CustomBottomBar />
+        <CustomBottomBar />
+      </Animated.View>
     </BackgroundWrapper>
   );
 }
 
-/** Mock datos de API para Racks  */
+// Mock data functions with enhanced data
 async function getRacksForGreenhouse(greenhouseId: string): Promise<Rack[]> {
   if (greenhouseId === '1') {
     return [
-      { id: '1', name: 'Rack A' },
-      { id: '2', name: 'Rack B' },
+      { id: '1', name: 'Rack A', status: 'optimal' },
+      { id: '2', name: 'Rack B', status: 'warning' },
     ];
   } else if (greenhouseId === '2') {
     return [
-      { id: '3', name: 'Rack X' },
-      { id: '2', name: 'Rack Y' },
+      { id: '3', name: 'Rack X', status: 'optimal' },
+      { id: '2', name: 'Rack Y', status: 'optimal' },
     ];
   } else if (greenhouseId === '3') {
     return [
-      { id: '1', name: 'Rack X' },
-      { id: '3', name: 'Rack Y' },
+      { id: '1', name: 'Rack 1', status: 'critical' },
+      { id: '3', name: 'Rack 2', status: 'optimal' },
     ];
-  }
-   else {
+  } else {
     return [];
   }
 }
@@ -152,93 +242,22 @@ async function getRacksForGreenhouse(greenhouseId: string): Promise<Rack[]> {
 async function getTraysForRack(greenhouseId: string, rackId: string): Promise<Tray[]> {
   if (rackId === '1') {
     return [
-      { id: '1', crop: 'Maíz', temp: '22°C', humidity: '84%' },
-      { id: '2', crop: 'Cebada', temp: '22°C', humidity: '83%' },
+      { id: '1', crop: 'Maíz', temp: '22°C', humidity: '84%', growthStage: 3, lastWatered: 'hace 2h' },
+      { id: '2', crop: 'Cebada', temp: '22°C', humidity: '83%', growthStage: 2, lastWatered: 'hace 3h' },
+      { id: '3', crop: 'Trigo', temp: '23°C', humidity: '78%', growthStage: 4, lastWatered: 'hace 1h' },
+      { id: '4', crop: 'Avena', temp: '24°C', humidity: '80%', growthStage: 1, lastWatered: 'hace 4h' },
     ];
   } else if (rackId === '2') {
     return [
-      { id: '3', crop: 'Centeno', temp: '23°C', humidity: '78%' },
-      { id: '4', crop: 'Avena', temp: '24°C', humidity: '80%' },
+      { id: '5', crop: 'Centeno', temp: '23°C', humidity: '78%', growthStage: 3, lastWatered: 'hace 2h' },
+      { id: '6', crop: 'Sorgo', temp: '22°C', humidity: '70%', growthStage: 5, lastWatered: 'hace 5h' },
     ];
   } else if (rackId === '3') {
     return [
-      { id: '5', crop: 'Trigo', temp: '25°C', humidity: '75%' },
-      { id: '6', crop: 'Sorgo', temp: '22°C', humidity: '70%' },
+      { id: '7', crop: 'Cebada', temp: '25°C', humidity: '75%', growthStage: 2, lastWatered: 'hace 3h' },
+      { id: '8', crop: 'Maíz', temp: '22°C', humidity: '70%', growthStage: 4, lastWatered: 'hace 1h' },
     ];
   } else {
     return [];
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFA500',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '90%',
-    marginTop: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  detailsContainer: {
-    backgroundColor: '#F4A460',
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 15,
-    width: '90%',
-    borderStyle: 'solid',
-    borderWidth: 5,
-    borderColor: '#ff8c00',
-  },
-  detailsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  trayContainer: {
-    backgroundColor: '#3E2723',
-    padding: 10,
-    borderRadius: 10,
-    width: '90%',
-    alignItems: 'center',
-  },
-  trayCard: {
-    backgroundColor: '#F4A460',
-    padding: 10,
-    margin: 5,
-    width: 100,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  trayText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  traySubText: {
-    fontSize: 14,
-  },
-  footer: {
-    flexDirection: 'row',
-    width: '100%',
-    padding: 15,
-    position: 'absolute',
-    bottom: 100,
-    alignItems: 'center',
-  },
-  homeButton: {
-    padding: 10,
-    backgroundColor: '#000',
-    borderRadius: 50,
-  },
-  footerText: {
-    marginLeft: 15,
-    fontSize: 18,
-    color: '#fff',
-  },
-});

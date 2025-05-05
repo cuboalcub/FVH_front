@@ -1,104 +1,151 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Animated } from 'react-native';
 import { useUser } from './usercontext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import BackgroundWrapper from './background';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
 export default function GreenhousesScreen({ navigation }: Props) {
   const { userType } = useUser();
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const greenhouses = [
-    { id: '1', name: 'Invernadero 1' },
-    { id: '2', name: 'Invernadero 2' },
-    { id: '3', name: 'Invernadero 3' },
+    { id: '1', name: 'Invernadero 1', plants: 24, status: 'optimal' },
+    { id: '2', name: 'Invernadero 2', plants: 18, status: 'warning' },
+    { id: '3', name: 'Invernadero 3', plants: 32, status: 'optimal' },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'optimal': return 'bg-green-400';
+      case 'warning': return 'bg-yellow-400';
+      case 'critical': return 'bg-red-400';
+      default: return 'bg-gray-400';
+    }
+  };
 
   return (
     <BackgroundWrapper>
-      <Text style={styles.header}>Greenhouses</Text>
-      <View style={styles.greenhousesContainer}>
-        {greenhouses.map((house) => (
-          <TouchableOpacity
-            key={house.id}
-            style={styles.greenhouseWrapper}
-            onPress={() => navigation.navigate('GreenhouseDetails', { greenhouseId: house.id, name: house.name })}
-          >
-            <Image source={require('../../assets/greenhouse.png')} style={styles.image} />
-            <Text style={styles.number}>{house.id}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+        <ScrollView 
+          className="flex-1 px-4 pt-20"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View className="flex-row justify-between items-center mb-6">
+            <Text className="text-2xl font-bold text-white">Mis Invernaderos</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+              <Ionicons name="notifications" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
 
-      {/* Botones de admin */}
-      {userType === 'admin' && (
-        <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('ConfigUsuariosScreen')}>
-          <Text style={styles.adminButtonText}>Usuario</Text>
-        </TouchableOpacity>
-      )}
-      {userType === 'admin' && (
-        <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('SensorData')}>
-          <Text style={styles.adminButtonText}> Configuracion de admin </Text>
-        </TouchableOpacity>
-      )}
-      
+          {/* Greenhouse Cards */}
+          <View className="mb-6">
+            <Text className="text-lg text-white mb-3">Tus instalaciones</Text>
+            <View className="space-y-3">
+              {greenhouses.map((house) => (
+                <TouchableOpacity
+                  key={house.id}
+                  className="bg-white/10 rounded-xl p-4 border border-white/20"
+                  onPress={() => navigation.navigate('GreenhouseDetails', { 
+                    greenhouseId: house.id, 
+                    name: house.name 
+                  })}
+                >
+                  <View className="flex-row items-center">
+                    <Image 
+                      source={require('../../assets/greenhouse.png')} 
+                      className="w-16 h-16 mr-3" 
+                    />
+                    <View className="flex-1">
+                      <View className="flex-row justify-between items-center">
+                        <Text className="text-white font-bold text-lg">{house.name}</Text>
+                        <View className={`${getStatusColor(house.status)} w-3 h-3 rounded-full`} />
+                      </View>
+                      <Text className="text-white/80 mt-1">{house.plants} plantas activas</Text>
+                    </View>
+                    <MaterialIcons name="chevron-right" size={24} color="white" />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
-      <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('PedidosScreen')}>
-        <Text style={styles.adminButtonText}> Pedidos </Text>
-      </TouchableOpacity>
+          {/* Quick Actions */}
+          <View className="mb-6">
+            <Text className="text-lg text-white mb-3">Acciones rápidas</Text>
+            <View className="flex-row flex-wrap justify-between">
+              <TouchableOpacity 
+                className="w-[48%] bg-amber-500 rounded-xl p-4 mb-3 items-center"
+                onPress={() => navigation.navigate('PedidosScreen')}
+              >
+                <MaterialIcons name="shopping-cart" size={28} color="white" />
+                <Text className="text-white font-medium mt-2">Pedidos</Text>
+              </TouchableOpacity>
+              {userType === 'admin' && (
+                <>
+                  <TouchableOpacity 
+                    className="w-[48%] bg-blue-600 rounded-xl p-4 items-center"
+                    onPress={() => navigation.navigate('ConfigUsuariosScreen')}
+                  >
+                    <MaterialIcons name="people" size={28} color="white" />
+                    <Text className="text-white font-medium mt-2">Usuarios</Text>
+                  </TouchableOpacity>
 
-      <TouchableOpacity style={styles.adminButton} onPress={() => navigation.navigate('Notifications')}>
-        <Text style={styles.adminButtonText}> Logs </Text>
-      </TouchableOpacity>
-    
+                  <TouchableOpacity 
+                    className="w-[48%] bg-purple-600 rounded-xl p-4 items-center"
+                    onPress={() => navigation.navigate('SensorData')}
+                  >
+                    <MaterialIcons name="settings" size={28} color="white" />
+                    <Text className="text-white font-medium mt-2">Configuración</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+
+          {/* Recent Activity */}
+          <View className="mb-6">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg text-white">Actividad reciente</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+                <Text className="text-amber-400">Ver todo</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="bg-white/10 rounded-xl p-4">
+              <View className="flex-row items-center mb-3">
+                <View className="bg-green-400/20 p-2 rounded-full mr-3">
+                  <MaterialIcons name="check" size={16} color="green" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white">Riego completado</Text>
+                  <Text className="text-white/50 text-xs">Invernadero 1 - hace 2h</Text>
+                </View>
+              </View>
+              <View className="flex-row items-center">
+                <View className="bg-yellow-400/20 p-2 rounded-full mr-3">
+                  <MaterialIcons name="warning" size={16} color="yellow" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white">Temperatura elevada</Text>
+                  <Text className="text-white/50 text-xs">Invernadero 2 - hace 5h</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </Animated.View>
     </BackgroundWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFA500'
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20, color: '#fff'
-  },
-  greenhousesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '90%'
-  },
-  greenhouseWrapper: {
-    alignItems: 'center'
-  },
-  image: {
-    width: 80,
-    height: 80
-  },
-  number: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 5
-  },
-  adminButton: {
-    marginTop: 20,
-    backgroundColor: 'black',
-    padding: 15,
-    borderRadius: 10,
-    width: 200,
-    alignItems: 'center',
-    textAlign: 'center'
-  },
-  adminButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
-});

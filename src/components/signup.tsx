@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
-import { Button } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackgroundWrapper from './background';
 import { signup } from '../utils/authservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function SignUpScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  const [nombre, setNombre] = useState('');
+  const [username, setusername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [confirmSecureTextEntry, setConfirmSecureTextEntry] = useState(true);
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
@@ -25,112 +28,134 @@ export default function SignUpScreen() {
       return;
     }
 
-    const resultado = await signup(email, password)
-    if (resultado.status ===200) {
-      Alert.alert('inicio de sesion exitoso', `Bienvenido, ${email}`);
-      navigation.navigate('SignIn')
-
+    setLoading(true);
+    try {
+      const resultado = await signup(username, email, password);
+      if (resultado.status === 201) {
+        Alert.alert('Registro exitoso', `Bienvenido ${username}`);
+        console.log('resultado', resultado);
+        navigation.navigate("SignIn");
+      } else {
+        Alert.alert('Error', resultado.message || 'Error en el registro');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Ocurrió un error al registrarse');
+      console.error('Signup error:', error);
+    } finally {
+      setLoading(false);
     }
-
-    // Aquí va la lógica de registro
-    Alert.alert('Registro exitoso', `Bienvenido, ${email}`);
   };
 
   return (
     <BackgroundWrapper>
-      <Text style={styles.title}>Crear Cuenta</Text>
-<Text style={styles.label}>Nombre</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nombre"
-        value={nombre}
-        onChangeText={setNombre}
-        autoCapitalize="none"
-      />
-<Text style={styles.label}>Correo Electrónico</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Correo Electrónico"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-<Text style={styles.label}>Contraseña</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-<Text style={styles.label}>Confirmar Contraseña</Text> 
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmar Contraseña"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-<TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Crear cuenta</Text>
-      </TouchableOpacity>
-          <Button onPress={() => navigation.navigate('SignIn') } style={{ marginTop: 20 }} >
-          ¿Ya tienes cuenta? Inicia sesión aquí </Button>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1 justify-center px-6"
+      >
+        <View className="mb-8">
+          <Text className="text-3xl font-bold text-gray-800 text-center mb-2">Crear Cuenta</Text>
+          <Text className="text-lg text-gray-600 text-center">Completa tus datos para registrarte</Text>
+        </View>
+
+        <View className="mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">username Completo</Text>
+          <View className="flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-200">
+            <MaterialIcons name="person" size={20} color="#6b7280" className="mr-2" />
+            <TextInput
+              className="flex-1 text-gray-800"
+              placeholder="Tu username completo"
+              placeholderTextColor="#9ca3af"
+              value={username}
+              onChangeText={setusername}
+              autoCapitalize="words"
+            />
+          </View>
+        </View>
+
+        <View className="mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">Correo Electrónico</Text>
+          <View className="flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-200">
+            <MaterialIcons name="email" size={20} color="#6b7280" className="mr-2" />
+            <TextInput
+              className="flex-1 text-gray-800"
+              placeholder="tu@email.com"
+              placeholderTextColor="#9ca3af"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoCorrect={false}
+            />
+          </View>
+        </View>
+
+        <View className="mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">Contraseña</Text>
+          <View className="flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-200">
+            <MaterialIcons name="lock" size={20} color="#6b7280" className="mr-2" />
+            <TextInput
+              className="flex-1 text-gray-800"
+              placeholder="••••••••"
+              placeholderTextColor="#9ca3af"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={secureTextEntry}
+            />
+            <TouchableOpacity onPress={() => setSecureTextEntry(!secureTextEntry)}>
+              <MaterialIcons 
+                name={secureTextEntry ? 'visibility-off' : 'visibility'} 
+                size={20} 
+                color="#6b7280" 
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</Text>
+          <View className="flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-200">
+            <MaterialIcons name="lock" size={20} color="#6b7280" className="mr-2" />
+            <TextInput
+              className="flex-1 text-gray-800"
+              placeholder="••••••••"
+              placeholderTextColor="#9ca3af"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={confirmSecureTextEntry}
+            />
+            <TouchableOpacity onPress={() => setConfirmSecureTextEntry(!confirmSecureTextEntry)}>
+              <MaterialIcons 
+                name={confirmSecureTextEntry ? 'visibility-off' : 'visibility'} 
+                size={20} 
+                color="#6b7280" 
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          className={`bg-amber-500 rounded-lg py-4 items-center ${loading ? 'opacity-70' : ''}`}
+          onPress={handleSignUp}
+          disabled={loading}
+        >
+          {loading ? (
+            <View className="flex-row items-center">
+              <Text className="text-white font-medium mr-2">Registrando...</Text>
+            </View>
+          ) : (
+            <Text className="text-white font-medium">Crear Cuenta</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="mt-4"
+          onPress={() => navigation.navigate('SignIn')}
+        >
+          <Text className="text-gray-600 text-center">
+            ¿Ya tienes una cuenta? <Text className="text-amber-500 font-medium">Inicia sesión</Text>
+          </Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
     </BackgroundWrapper>
   );
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#FFA500',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#000',
-  },
-  label: {
-    alignSelf: 'flex-start',
-    fontSize: 16,
-    marginBottom: 5,
-    color: '#000',
-  },
-  input: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
-  button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-  },
-  registerText: {
-    marginTop: 15,
-    color: '#000',
-  },
-  link: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginTop: 5,
-  },
-});

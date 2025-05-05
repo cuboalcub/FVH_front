@@ -1,32 +1,21 @@
 import React from 'react';
-import { View, ImageBackground, StyleSheet } from 'react-native';
+import { View, ImageBackground } from 'react-native';
 
 const BackgroundWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <ImageBackground 
       source={require('../../assets/bg.png')} 
-      style={styles.background}
+      className="flex-1"
       resizeMode="cover"
+      blurRadius={2} // Efecto de desenfoque sutil
     >
-      <View style={styles.content}>{children}</View>
+      <View className="flex-1 bg-black/20"> {/* Capa semitransparente para mejor legibilidad */}
+        <View className="flex-1 p-4">
+          {children}
+        </View>
+      </View>
     </ImageBackground>
   );
 };
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-  },
-  
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-});
 
 export default BackgroundWrapper;

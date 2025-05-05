@@ -3,8 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { UserProvider } from "./components/usercontext";
 
-// Import Screens
-
+// Screen imports
 import SignInScreen from '../src/components/signin';
 import SignUpScreen from '../src/components/signup';
 import GreenhousesScreen from '../src/components/menuinvernaderos';
@@ -17,16 +16,32 @@ import ConfigUsuariosScreen from "./components/userssettings";
 import SensorDataScreen from "./components/sensorsettings";
 import LogsScreen from "./components/notifications";
 import MQTTScreen from "./components/MQTTScreen";
+import "../global.css";
 
+// Type definitions for navigation parameters
 export type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
   Greenhouses: undefined;
-  GreenhouseDetails: { greenhouseId: string; name: string };
-  RackDetails: { rackId: string; greenhouseId: string; name: string };
-  ShelfDetails: { shelfId: string; rackId: string; greenhouseId: string };
+  GreenhouseDetails: { 
+    greenhouseId: string; 
+    name: string;
+    status?: 'optimal' | 'warning' | 'critical'; // Added optional status
+  };
+  RackDetails: { 
+    rackId: string; 
+    greenhouseId: string; 
+    name: string;
+    status?: 'optimal' | 'warning' | 'critical'; // Added optional status
+  };
+  ShelfDetails: { 
+    shelfId: string; 
+    rackId: string; 
+    greenhouseId: string;
+    name?: string; // Added optional name
+  };
   Config: undefined;
-  MQTT: undefined; 
+  MQTT: undefined;
   PedidosScreen: undefined;
   ConfigUsuariosScreen: undefined;
   SensorData: undefined;
@@ -35,26 +50,124 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Screen options configuration
+const screenOptions = {
+  headerShown: true,
+
+  // Header appearance
+  headerStyle: {
+    backgroundColor: '#2c3e50', // Dark blue background
+  },
+  headerTintColor: '#ffffff', // White color for back button and title
+  headerTitleStyle: {
+    fontWeight: 'bold', // Bold title text
+  },
+  headerBackTitleVisible: false, // Hide iOS back button text
+
+  // Transition animation
+  animation: 'slide_from_right' as const, // Smooth screen transition
+};
+
+
 export default function App() {
   return (
     <UserProvider>
-    <NavigationContainer>
+      <NavigationContainer>
+        <Stack.Navigator 
+          initialRouteName="SignIn"
+          screenOptions={screenOptions}
+        >
+          {/* Auth Screens */}
+          <Stack.Screen 
+            name="SignIn" 
+            component={SignInScreen} 
+            options={{ 
+              title: 'Iniciar Sesión',
+              headerShown: false // Full-screen for auth
+            }} 
+          />
+          <Stack.Screen 
+            name="SignUp" 
+            component={SignUpScreen} 
+            options={{ 
+              title: 'Crear Cuenta',
+              headerShown: false // Full-screen for auth
+            }} 
+          />
 
-      <Stack.Navigator screenOptions={{ headerShown: true }}>
-        <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Iniciar Sesión' }} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Registrarse' }} />
-        <Stack.Screen name="Greenhouses" component={GreenhousesScreen} options={{ title: 'Invernaderos' }} />
-        <Stack.Screen name="GreenhouseDetails" component={GreenhouseDetailsScreen} options={{ title: 'Detalles Invernadero' }} />
-        <Stack.Screen name="RackDetails" component={RackDetailsScreen} options={{ title: 'Detalles Rack' }} />
-        <Stack.Screen name="ShelfDetails" component={ShelfDetailsScreen} options={{ title: 'Detalles Shelf' }} />
-        <Stack.Screen name="Config" component={ConfigScreen} />
-        <Stack.Screen name= "PedidosScreen" component={PedidosScreen} options={{ title: 'PedidosScreen' }}/>
-        <Stack.Screen name="ConfigUsuariosScreen" component={ConfigUsuariosScreen} />
-        <Stack.Screen name= "SensorData" component={SensorDataScreen}/>
-        <Stack.Screen name= "Notifications" component={LogsScreen}/>
-        <Stack.Screen name="MQTT" component={MQTTScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+<Stack.Screen 
+  name="Greenhouses"
+  component={GreenhousesScreen}
+  options={{
+    animationDuration: 10, // Disable animation
+    title: 'Mis Invernaderos',
+    headerShown: false,
+    headerLeft: () => null, // Quita el botón de atrás
+    gestureEnabled: false, // Desactiva gesto de deslizamiento (iOS)
+  }}
+/>
+
+          
+          {/* Greenhouse Flow */}
+          <Stack.Screen 
+            name="GreenhouseDetails" 
+            component={GreenhouseDetailsScreen} 
+            options={({ route }) => ({ 
+              title: route.params.name || 'Invernadero'
+            })} 
+          />
+          <Stack.Screen 
+            name="RackDetails" 
+            component={RackDetailsScreen} 
+            options={({ route }) => ({ 
+              title: route.params.name || 'Rack'
+            })} 
+          />
+          <Stack.Screen 
+            name="ShelfDetails" 
+            component={ShelfDetailsScreen} 
+            options={({ route }) => ({ 
+              title: route.params.name || 'Estante'
+            })} 
+          />
+
+          {/* Configuration Screens */}
+          <Stack.Group screenOptions={{ presentation: 'modal' }}>
+            <Stack.Screen 
+              name="Config" 
+              component={ConfigScreen} 
+              options={{ title: 'Configuración' }} 
+            />
+            <Stack.Screen 
+              name="ConfigUsuariosScreen" 
+              component={ConfigUsuariosScreen} 
+              options={{ title: 'Administrar Usuarios' }} 
+            />
+            <Stack.Screen 
+              name="SensorData" 
+              component={SensorDataScreen} 
+              options={{ title: 'Configuración de Sensores' }} 
+            />
+            <Stack.Screen 
+              name="Notifications" 
+              component={LogsScreen} 
+              options={{ title: 'Registro de Actividades' }} 
+            />
+            <Stack.Screen 
+              name="PedidosScreen" 
+              component={PedidosScreen} 
+              options={{ title: 'Gestión de Pedidos' }} 
+            />
+          </Stack.Group>
+
+          {/* Optional MQTT Screen */}
+          {/* <Stack.Screen 
+            name="MQTT" 
+            component={MQTTScreen} 
+            options={{ title: 'Conexión MQTT' }} 
+          /> */}
+        </Stack.Navigator>
+      </NavigationContainer>
     </UserProvider>
   );
 }

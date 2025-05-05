@@ -1,6 +1,5 @@
 // src/services/authService.ts
 import { API_ROUTES } from "./api";
-import { BASE_URL } from "./api";
 const API_URL = API_ROUTES; // Cambia por tu IP o dominio
 
 export const login = async (username: string, password: string) => {
@@ -28,19 +27,45 @@ export const login = async (username: string, password: string) => {
   }
 };
 
-export const signup = async (email: string, password: string) => {
+export const signup = async (username: string, email: string, password: string) => {
   try {
+
+    
+
     const response = await fetch(`${API_URL.SIGNUP}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username,email, password }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Error al registrarse');
+    }
+
+    const data = await response.json();
+    return data; // Devuelve el resultado del registro
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const checkTokenUser = async ( token: string) => {
+  try {
+    const response = await fetch(`${API_URL.CHECK_TOKEN}`, {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al verificar el token');
     }
 
     const data = await response.json();
