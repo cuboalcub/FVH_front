@@ -29,16 +29,6 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
           showsVerticalScrollIndicator={false}
         >
           {/* Header with back button */}
-          <View className="flex-row items-center mb-4">
-            <TouchableOpacity 
-              onPress={() => navigation.goBack()}
-              className="p-2 mr-2"
-            >
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
-            <Text className="text-2xl font-bold text-white flex-1">{name}</Text>
-          </View>
-
           {/* Status bar */}
           <View className="flex-row items-center bg-white/10 rounded-full px-4 py-2 mb-6">
             <View className="w-3 h-3 bg-green-400 rounded-full mr-2" />
@@ -73,28 +63,7 @@ export default function GreenhouseDetailsScreen({ route, navigation }: Props) {
               </TouchableOpacity>
             ))}
           </View>
-
-          {/* Quick actions */}
-          <Text className="text-lg text-white mb-3">Acciones rápidas</Text>
-          <View className="flex-row flex-wrap justify-between mb-6">
-            <TouchableOpacity 
-              className="w-[48%] bg-amber-500 rounded-xl p-4 mb-3 items-center"
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="add" size={24} color="white" />
-              <Text className="text-white font-medium mt-2">Nuevo rack</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              className="w-[48%] bg-emerald-600 rounded-xl p-4 mb-3 items-center"
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="bar-chart" size={24} color="white" />
-              <Text className="text-white font-medium mt-2">Estadísticas</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
-
         <CustomBottomBar />
       </Animated.View>
     </BackgroundWrapper>

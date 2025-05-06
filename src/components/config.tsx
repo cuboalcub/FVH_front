@@ -17,7 +17,7 @@ const ConfigScreen = () => {
   // Mock api para config
 
   useEffect(() => {
-    axios.get('mqtt://192.168.158.151:1883') 
+    axios.get('mqtt://192.168.158.151:1883') //placeholder
       .then(response => {
         setChartData({
           labels: response.data.labels,

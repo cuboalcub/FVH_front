@@ -46,6 +46,7 @@ export type RootStackParamList = {
   ConfigUsuariosScreen: undefined;
   SensorData: undefined;
   Notifications: undefined;
+  TrayDetails: { trayId: string }; 
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

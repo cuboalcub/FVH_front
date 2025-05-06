@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Animated, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Animated, ScrollView , Modal, TextInput} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
+import { Picker } from '@react-native-picker/picker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
 
@@ -29,6 +30,10 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
   const [trays, setTrays] = useState<Tray[]>([]);
   const [selectedTray, setSelectedTray] = useState<Tray | null>(null);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const [modalVisible, setModalVisible] = useState(false);
+const [selectedPedido, setSelectedPedido] = useState('');
+const [trayNumber, setTrayNumber] = useState(trays.length + 1); // auto-increment or placeholder
+const [pedidos, setPedidos] = useState<{ id: string; description: string }[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,9 +48,23 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
         duration: 500,
         useNativeDriver: true,
       }).start();
+
+      const fetchPedidos = async () => {
+        const data = await getPedidos();
+        setPedidos(data);
+      };
+      fetchPedidos();
     };
 
     fetchData();
+
+    async function getPedidos(): Promise<{ id: string; description: string }[]> {
+      return [
+        { id: '101', description: '10kg maíz' },
+        { id: '102', description: '20kg trigo' },
+        { id: '103', description: '5kg cebada' },
+      ];
+    }
 
     return () => fadeAnim.setValue(0);
   }, [greenhouseId, rackId]);
@@ -76,13 +95,13 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
           </TouchableOpacity>
 
           <View className="items-center">
-  <Text className="text-xl font-bold text-white">{name}</Text>
-  <View className={`${getStatusColor(racks.find(r => r.id === rackId)?.status || 'optimal')} px-3 py-1 rounded-full mt-1`}>
-    <Text className="text-white text-xs font-medium">
-      {racks.find(r => r.id === rackId)?.status.toUpperCase() || 'N/A'}
-    </Text>
-  </View>
-</View>
+            <Text className="text-xl font-bold text-white">{name}</Text>
+            <View className={`${getStatusColor(racks.find(r => r.id === rackId)?.status || 'optimal')} px-3 py-1 rounded-full mt-1`}>
+              <Text className="text-white text-xs font-medium">
+                {racks.find(r => r.id === rackId)?.status.toUpperCase() || 'N/A'}
+              </Text>
+            </View>
+          </View>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('Config')}
@@ -96,7 +115,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
           {/* Rack navigation controls */}
           <View className="flex-row justify-between items-center my-4">
             <TouchableOpacity
-              onPress={() => prevRack && navigation.replace('RackDetails', {
+              onPress={() => prevRack && navigation.push('RackDetails', {
                 rackId: prevRack.id,
                 greenhouseId,
                 name: prevRack.name,
@@ -109,7 +128,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => nextRack && navigation.replace('RackDetails', {
+              onPress={() => nextRack && navigation.push('RackDetails', {
                 rackId: nextRack.id,
                 greenhouseId,
                 name: nextRack.name,
@@ -204,13 +223,70 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
         </ScrollView>
 
         {/* Floating action button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           className="absolute bottom-28 right-5 bg-amber-500 p-4 rounded-full shadow-xl"
-          onPress={() => navigation.navigate('AddTray', { rackId, greenhouseId })}
+          onPress={() => {
+            setTrayNumber(trays.length + 1);
+            setModalVisible(true);
+          }}
         >
           <MaterialCommunityIcons name="plus" size={24} color="white" />
         </TouchableOpacity>
 
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white w-11/12 rounded-xl p-6">
+              <Text className="text-lg font-bold text-center mb-4">
+                Agregar Charola #{trayNumber}
+              </Text>
+
+              <Text className="text-base font-medium mb-2">Selecciona Pedido</Text>
+              <View className="border border-gray-300 rounded-lg mb-6">
+                <Picker
+                  selectedValue={selectedPedido}
+                  onValueChange={(itemValue) => setSelectedPedido(itemValue)}
+                >
+                  {pedidos.map(pedido => (
+                    <Picker.Item
+                      key={pedido.id}
+                      label={`Pedido #${pedido.id} - ${pedido.description}`}
+                      value={pedido.id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+
+              <TouchableOpacity
+                className="bg-amber-500 py-3 rounded-lg"
+                onPress={() => {
+                  if (selectedPedido) {
+                    const pedidoDesc = pedidos.find(p => p.id === selectedPedido)?.description || 'Nuevo cultivo';
+                
+                    const newTray: Tray = {
+                      id: `${Date.now()}`,
+                      crop: pedidoDesc.split(' ')[1] || 'Cultivo',
+                      temp: '22°C',
+                      humidity: '75%',
+                      growthStage: 1,
+                      lastWatered: 'recién',
+                    };
+                
+                    setTrays(prev => [...prev, newTray]);
+                    setModalVisible(false);
+                    setSelectedPedido('');
+                  }
+                }}
+              >
+                <Text className="text-white text-center font-bold">Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         <CustomBottomBar />
       </Animated.View>
     </BackgroundWrapper>
