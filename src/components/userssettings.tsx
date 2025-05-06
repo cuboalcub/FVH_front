@@ -171,14 +171,27 @@ export default function ConfigUsuariosScreen() {
       </Text>
 
       <Text className="text-sm font-medium text-gray-700 mb-1">Nombre</Text>
-      <View className={`w-full border border-gray-300 rounded-lg p-3 mb-4 bg-gray-100`}>
-        <Text className="text-gray-700">{newUserName}</Text>
-      </View>
+      <TextInput
+        className={`w-full border border-gray-300 rounded-lg p-3 mb-4 ${
+          isEditing ? 'bg-gray-100 text-gray-500' : 'bg-white'
+        }`}
+        placeholder="Nombre completo"
+        value={newUserName}
+        onChangeText={setNewUserName}
+        editable={!isEditing} // deshabilitado si se edita
+      />
 
       <Text className="text-sm font-medium text-gray-700 mb-1">Email</Text>
-      <View className={`w-full border border-gray-300 rounded-lg p-3 mb-4 bg-gray-100`}>
-        <Text className="text-gray-700">{newUserEmail}</Text>
-      </View>
+      <TextInput
+        className={`w-full border border-gray-300 rounded-lg p-3 mb-4 ${
+          isEditing ? 'bg-gray-100 text-gray-500' : 'bg-white'
+        }`}
+        placeholder="correo@ejemplo.com"
+        keyboardType="email-address"
+        value={newUserEmail}
+        onChangeText={setNewUserEmail}
+        editable={!isEditing} // deshabilitado si se edita
+      />
 
       <Text className="text-sm font-medium text-gray-700 mb-1">Rol</Text>
       <View className="border border-gray-300 rounded-lg mb-6">
@@ -213,6 +226,7 @@ export default function ConfigUsuariosScreen() {
     </View>
   </View>
 </Modal>
+
       </View>
     </BackgroundWrapper>
   );
