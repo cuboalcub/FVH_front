@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Animated, ScrollView , Modal, TextInput} from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Animated, ScrollView, Modal, TextInput } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -50,8 +50,8 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
   // Mock data for pedidos
   const [pedidos, setPedidos] = useState<Pedido[]>([
     { id: 'MOCK1', description: 'Mock Pedido 1' },
-    { id: 'MOCK2', description: 'Another Mock Pedido' },
-    { id: 'MOCK3', description: 'Test Pedido' },
+    { id: 'MOCK2', description: 'Mock Pedido 2' },
+    { id: 'MOCK3', description: 'Mock Pedido 3' },
   ]);
 
   // Mock data for detallePedido (will change based on selectedPedido)
@@ -156,7 +156,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
   const nextRack = currentIndex < racks.length - 1 ? racks[currentIndex + 1] : null;
 
   const getStatusColor = (status: Rack['status'] | undefined) => {
-    switch(status) {
+    switch (status) {
       case 'optimal': return 'bg-green-500';
       case 'warning': return 'bg-yellow-500';
       case 'critical': return 'bg-red-500';
@@ -168,141 +168,117 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
     <BackgroundWrapper>
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {/* ... Your header and ScrollView content ... */}
-         <View className="flex-row justify-between items-center px-4 pt-6 pb-4 bg-white/10">
-                  <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    className="p-2"
-                  >
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                  </TouchableOpacity>
-        
-                  <View className="items-center">
-                    <Text className="text-xl font-bold text-white">{name}</Text>
-                    <View className={`${getStatusColor(racks.find(r => r.id === rackId)?.status || 'optimal')} px-3 py-1 rounded-full mt-1`}>
-                      <Text className="text-white text-xs font-medium">
-                        {racks.find(r => r.id === rackId)?.status.toUpperCase() || 'N/A'}
-                      </Text>
+
+        <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+          {/* Rack navigation controls */}
+          <View className="flex-row justify-between items-center my-4">
+            <TouchableOpacity
+              onPress={() => prevRack && navigation.push('RackDetails', {
+                rackId: prevRack.id,
+                greenhouseId,
+                name: prevRack.name,
+              })}
+              className={`flex-row items-center ${!prevRack ? 'opacity-30' : ''}`}
+              disabled={!prevRack}
+            >
+              <Ionicons name="chevron-back" size={20} color="white" />
+              <Text className="text-white ml-1">{prevRack?.name || 'N/A'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => nextRack && navigation.push('RackDetails', {
+                rackId: nextRack.id,
+                greenhouseId,
+                name: nextRack.name,
+              })}
+              className={`flex-row items-center ${!nextRack ? 'opacity-30' : ''}`}
+              disabled={!nextRack}
+            >
+              <Text className="text-white mr-1">{nextRack?.name || 'N/A'}</Text>
+              <Ionicons name="chevron-forward" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+          {/* Rack statistics */}
+          <View className="bg-white/10 rounded-xl p-4 mb-6 border border-white/20">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-bold text-white">Estadísticas del Rack</Text>
+              <MaterialCommunityIcons name="chart-bar" size={24} color="white" />
+            </View>
+
+            <View className="flex-row justify-between">
+              <View className="items-center">
+                <Text className="text-white font-bold text-xl">{trays.length}</Text>
+                <Text className="text-white/80 text-xs">Charolas</Text>
+              </View>
+
+              <View className="items-center">
+                <Text className="text-white font-bold text-xl">
+                  {trays.reduce((acc, tray) => acc + parseInt(tray.temp), 0) / trays.length || 0}°C
+                </Text>
+                <Text className="text-white/80 text-xs">Temp. promedio</Text>
+              </View>
+
+              <View className="items-center">
+                <Text className="text-white font-bold text-xl">
+                  {trays.reduce((acc, tray) => acc + parseInt(tray.humidity), 0) / trays.length || 0}%
+                </Text>
+                <Text className="text-white/80 text-xs">Humedad promedio</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Trays grid */}
+          <Text className="text-lg font-bold text-white mb-3">Charolas ({trays.length})</Text>
+          <View className="flex-row flex-wrap justify-between mb-24">
+            {trays.map((tray) => (
+              <TouchableOpacity
+                key={tray.id}
+                className={`w-[48%] mb-4 ${selectedTray?.id === tray.id ? 'border-2 border-amber-400' : ''}`}
+                onPress={() => setSelectedTray(tray)}
+                activeOpacity={0.7}
+              >
+                <View className="bg-white/10 p-3 rounded-xl">
+                  <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-white font-bold">{tray.crop}</Text>
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons
+                        name="water"
+                        size={14}
+                        color="#60a5fa"
+                        style={{ marginRight: 4 }}
+                      />
+                      <Text className="text-blue-300 text-xs">{tray.lastWatered}</Text>
                     </View>
                   </View>
-        
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('Config')}
-                    className="p-2"
-                  >
-                    <Ionicons name="settings" size={24} color="white" />
-                  </TouchableOpacity>
-                </View>
 
-                <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
-                          {/* Rack navigation controls */}
-                          <View className="flex-row justify-between items-center my-4">
-                            <TouchableOpacity
-                              onPress={() => prevRack && navigation.push('RackDetails', {
-                                rackId: prevRack.id,
-                                greenhouseId,
-                                name: prevRack.name,
-                              })}
-                              className={`flex-row items-center ${!prevRack ? 'opacity-30' : ''}`}
-                              disabled={!prevRack}
-                            >
-                              <Ionicons name="chevron-back" size={20} color="white" />
-                              <Text className="text-white ml-1">{prevRack?.name || 'N/A'}</Text>
-                            </TouchableOpacity>
-                
-                            <TouchableOpacity
-                              onPress={() => nextRack && navigation.push('RackDetails', {
-                                rackId: nextRack.id,
-                                greenhouseId,
-                                name: nextRack.name,
-                              })}
-                              className={`flex-row items-center ${!nextRack ? 'opacity-30' : ''}`}
-                              disabled={!nextRack}
-                            >
-                              <Text className="text-white mr-1">{nextRack?.name || 'N/A'}</Text>
-                              <Ionicons name="chevron-forward" size={20} color="white" />
-                            </TouchableOpacity>
-                          </View>
-                {/* Rack statistics */}
-                          <View className="bg-white/10 rounded-xl p-4 mb-6 border border-white/20">
-                            <View className="flex-row justify-between items-center mb-3">
-                              <Text className="text-lg font-bold text-white">Estadísticas del Rack</Text>
-                              <MaterialCommunityIcons name="chart-bar" size={24} color="white" />
-                            </View>
-                
-                            <View className="flex-row justify-between">
-                              <View className="items-center">
-                                <Text className="text-white font-bold text-xl">{trays.length}</Text>
-                                <Text className="text-white/80 text-xs">Charolas</Text>
-                              </View>
-                
-                              <View className="items-center">
-                                <Text className="text-white font-bold text-xl">
-                                  {trays.reduce((acc, tray) => acc + parseInt(tray.temp), 0) / trays.length || 0}°C
-                                </Text>
-                                <Text className="text-white/80 text-xs">Temp. promedio</Text>
-                              </View>
-                
-                              <View className="items-center">
-                                <Text className="text-white font-bold text-xl">
-                                  {trays.reduce((acc, tray) => acc + parseInt(tray.humidity), 0) / trays.length || 0}%
-                                </Text>
-                                <Text className="text-white/80 text-xs">Humedad promedio</Text>
-                              </View>
-                            </View>
-                          </View>
-                
-                          {/* Trays grid */}
-                          <Text className="text-lg font-bold text-white mb-3">Charolas ({trays.length})</Text>
-                          <View className="flex-row flex-wrap justify-between mb-24">
-                            {trays.map((tray) => (
-                              <TouchableOpacity
-                                key={tray.id}
-                                className={`w-[48%] mb-4 ${selectedTray?.id === tray.id ? 'border-2 border-amber-400' : ''}`}
-                                onPress={() => setSelectedTray(tray)}
-                                activeOpacity={0.7}
-                              >
-                                <View className="bg-white/10 p-3 rounded-xl">
-                                  <View className="flex-row justify-between items-center mb-2">
-                                    <Text className="text-white font-bold">{tray.crop}</Text>
-                                    <View className="flex-row items-center">
-                                      <MaterialCommunityIcons
-                                        name="water"
-                                        size={14}
-                                        color="#60a5fa"
-                                        style={{ marginRight: 4 }}
-                                      />
-                                      <Text className="text-blue-300 text-xs">{tray.lastWatered}</Text>
-                                    </View>
-                                  </View>
-                
-                                  <View className="flex-row justify-between">
-                                    <View className="flex-row items-center">
-                                      <MaterialCommunityIcons name="thermometer" size={14} color="#f87171" />
-                                      <Text className="text-white text-xs ml-1">{tray.temp}</Text>
-                                    </View>
-                                    <View className="flex-row items-center">
-                                      <MaterialCommunityIcons name="water-percent" size={14} color="#60a5fa" />
-                                      <Text className="text-white text-xs ml-1">{tray.humidity}</Text>
-                                    </View>
-                                  </View>
-                
-                                  <View className="mt-2">
-                                    <View className="w-full bg-gray-600 rounded-full h-1.5">
-                                      <View
-                                        className="bg-amber-400 h-1.5 rounded-full"
-                                        style={{ width: `${(tray.growthStage / 5) * 100}%` }}
-                                      />
-                                    </View>
-                                    <Text className="text-white/80 text-xs mt-1">
-                                      Etapa {tray.growthStage}/5
-                                    </Text>
-                                  </View>
-                                </View>
-                              </TouchableOpacity>
-                            ))}
-                          </View>
-                        </ScrollView>
-                        
+                  <View className="flex-row justify-between">
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons name="thermometer" size={14} color="#f87171" />
+                      <Text className="text-white text-xs ml-1">{tray.temp}</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons name="water-percent" size={14} color="#60a5fa" />
+                      <Text className="text-white text-xs ml-1">{tray.humidity}</Text>
+                    </View>
+                  </View>
+
+                  <View className="mt-2">
+                    <View className="w-full bg-gray-600 rounded-full h-1.5">
+                      <View
+                        className="bg-amber-400 h-1.5 rounded-full"
+                        style={{ width: `${(tray.growthStage / 5) * 100}%` }}
+                      />
+                    </View>
+                    <Text className="text-white/80 text-xs mt-1">
+                      Etapa {tray.growthStage}/5
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
         {/* Floating action button */}
         <TouchableOpacity
           className="absolute bottom-28 right-5 bg-amber-500 p-4 rounded-full shadow-xl"
@@ -331,7 +307,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
               </TouchableOpacity>
 
               <Text className="text-lg font-bold text-center mb-4">
-                Agregar Charola #{trayNumber}
+                Agregar Bandeja #{trayNumber}
               </Text>
 
               <Text className="text-base font-medium mb-2">Selecciona Pedido</Text>
@@ -370,6 +346,8 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
                           value={quantities[item.id] || '1'}
                           onChangeText={(text) => handleQuantityChange(item.id, text)}
                           keyboardType="numeric"
+                          editable={checkedItems[item.id]} // Disable if the checkbox is not checked
+                          style={!checkedItems[item.id] ? { backgroundColor: '#f0f0f0', color: '#777' } : {}} // Optional: visual feedback for disabled state
                         />
                       </View>
                     </View>
