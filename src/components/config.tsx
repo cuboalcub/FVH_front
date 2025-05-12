@@ -1,32 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import axios from 'axios';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
+import { useMQTT } from './useMQTT';
 
 const ConfigScreen = () => {
+  const { messages } = useMQTT(); // 📡 Hook personalizado
   const [chartData, setChartData] = useState({
-    labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
-    datasets: [{ data: [0, 0, 0, 0, 0, 0, 0] }],
+    labels: [] as string[],
+    datasets: [{ data: [] as number[] }],
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const mockApiData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    values: [20, 45, 28, 80, 99, 43, 65],
+  // Agrega un nuevo dato y mantiene solo los últimos 10
+  const addNewData = (value: number) => {
+    setChartData(prev => {
+      const newData = [...prev.datasets[0].data];
+      const newLabels = [...prev.labels];
+
+      if (newData.length >= 10) {
+        newData.shift();
+        newLabels.shift();
+      }
+
+      newData.push(value);
+      newLabels.push(new Date().toLocaleTimeString());
+
+      return {
+        labels: newLabels,
+        datasets: [{ data: newData }],
+      };
+    });
   };
 
+  // Escucha los mensajes del broker
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setChartData({
-        labels: mockApiData.labels,
-        datasets: [{ data: mockApiData.values }],
-      });
-      setLoading(false);
-    }, 1500); 
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      const value = parseFloat(lastMsg);
+      if (!isNaN(value)) {
+        addNewData(value);
+      }
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000);
   }, []);
 
   const activateSprinklers = () => alert('Aspersores Activados');
@@ -43,46 +63,23 @@ const ConfigScreen = () => {
     );
   }
 
-  if (error) {
-    return (
-      <BackgroundWrapper>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => {
-            setError(null);
-            setLoading(true);
-            setTimeout(() => {
-              setChartData({
-                labels: mockApiData.labels,
-                datasets: [{ data: mockApiData.values }],
-              });
-              setLoading(false);
-            }, 700); //
-          }}>
-            <Text style={styles.retryButtonText}>Reintentar</Text>
-          </TouchableOpacity>
-        </View>
-      </BackgroundWrapper>
-    );
-  }
-
   return (
     <BackgroundWrapper>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Panel de Control</Text>
-        <Text style={styles.subtitle}>Ajustes Manuales del Sistema</Text>
+        <Text style={styles.subtitle}>Datos recibidos por MQTT</Text>
         <View style={styles.chartContainer}>
           <LineChart
             data={chartData}
-            width={320} 
-            height={200} 
+            width={320}
+            height={200}
             yAxisLabel=""
             chartConfig={{
-              backgroundColor: 'de9c21',
-              backgroundGradientFrom: '#de9c21', 
+              backgroundColor: '#de9c21',
+              backgroundGradientFrom: '#de9c21',
               backgroundGradientTo: '#de9c21',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, 
+              decimalPlaces: 2,
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               style: {
                 borderRadius: 8,
@@ -112,13 +109,13 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     alignItems: 'center',
-    paddingVertical: 20, 
+    paddingVertical: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#fff', 
+    color: '#fff',
   },
   subtitle: {
     fontSize: 18,
@@ -126,20 +123,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   chartContainer: {
-    backgroundColor: '#de9c21', 
+    backgroundColor: '#de9c21',
     borderRadius: 10,
     padding: 15,
     marginBottom: 20,
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   chart: {
     borderRadius: 8,
   },
   button: {
-    backgroundColor: '#de9c21', 
+    backgroundColor: '#de9c21',
     padding: 18,
     borderRadius: 12,
-    width: 280, 
+    width: 280,
     alignItems: 'center',
     marginVertical: 8,
     elevation: 3,
@@ -158,28 +155,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#A0522D',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 18,
-    color: '#FF6347', 
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: '#FFA07A', 
-    padding: 15,
-    borderRadius: 10,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 
