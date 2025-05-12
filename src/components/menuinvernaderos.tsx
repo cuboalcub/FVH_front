@@ -5,12 +5,15 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import BackgroundWrapper from './background';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { get_invernadores } from '../utils/invernaderos';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
 export default function GreenhousesScreen({ navigation }: Props) {
-  const { userType } = useUser();
+  const { userType, token } = useUser();
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const [greenhouses, setGreenhouses] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -20,28 +23,25 @@ export default function GreenhousesScreen({ navigation }: Props) {
     }).start();
   }, []);
 
-  const greenhouses = [
-    { id: '1', name: 'Invernadero 1', plants: 24, status: 'optimal' },
-    { id: '2', name: 'Invernadero 2', plants: 18, status: 'warning' },
-    { id: '3', name: 'Invernadero 3', plants: 32, status: 'optimal' },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'optimal': return 'bg-green-400';
-      case 'warning': return 'bg-yellow-400';
-      case 'critical': return 'bg-red-400';
-      default: return 'bg-gray-400';
-    }
-  };
+  React.useEffect(() => {
+    const fetchGreenhouses = async () => {
+      try {
+        const token =  await AsyncStorage.getItem("token")
+        const res = await get_invernadores(token || undefined);
+        if (res.status === 200 && Array.isArray(res.data)) {
+          setGreenhouses(res.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener invernaderos:', error);
+      }
+    };
+    fetchGreenhouses();
+  }, []);
 
   return (
     <BackgroundWrapper>
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-        <ScrollView 
-          className="flex-1 px-4 pt-20"
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView className="flex-1 px-4 pt-20" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View className="flex-row justify-between items-center mb-6">
             <Text className="text-2xl font-bold text-white">Mis Invernaderos</Text>
@@ -58,22 +58,21 @@ export default function GreenhousesScreen({ navigation }: Props) {
                 <TouchableOpacity
                   key={house.id}
                   className="bg-white/10 rounded-xl p-4 border border-white/20"
-                  onPress={() => navigation.navigate('GreenhouseDetails', { 
-                    greenhouseId: house.id, 
-                    name: house.name 
+                  onPress={() => navigation.navigate('GreenhouseDetails', {
+                    greenhouseId: house.id,
+                    name: house.ubicacion
                   })}
                 >
                   <View className="flex-row items-center">
-                    <Image 
-                      source={require('../../assets/greenhouse.png')} 
-                      className="w-16 h-16 mr-3" 
+                    <Image
+                      source={require('../../assets/greenhouse.png')}
+                      className="w-16 h-16 mr-3"
                     />
                     <View className="flex-1">
                       <View className="flex-row justify-between items-center">
-                        <Text className="text-white font-bold text-lg">{house.name}</Text>
-                        <View className={`${getStatusColor(house.status)} w-3 h-3 rounded-full`} />
+                        <Text className="text-white font-bold text-lg">{house.ubicacion}</Text>
                       </View>
-                      <Text className="text-white/80 mt-1">{house.plants} plantas activas</Text>
+                      <Text className="text-white/80 mt-1">{house.num_bandejas} bandejas</Text>
                     </View>
                     <MaterialIcons name="chevron-right" size={24} color="white" />
                   </View>
@@ -86,7 +85,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
           <View className="mb-6">
             <Text className="text-lg text-white mb-3">Acciones rápidas</Text>
             <View className="flex-row flex-wrap justify-between">
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="w-[48%] bg-amber-500 rounded-xl p-4 mb-3 items-center"
                 onPress={() => navigation.navigate('PedidosScreen')}
               >
@@ -95,7 +94,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
               </TouchableOpacity>
               {userType === 'admin' && (
                 <>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     className="w-[48%] bg-blue-600 rounded-xl p-4 items-center"
                     onPress={() => navigation.navigate('ConfigUsuariosScreen')}
                   >
@@ -103,7 +102,7 @@ export default function GreenhousesScreen({ navigation }: Props) {
                     <Text className="text-white font-medium mt-2">Usuarios</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     className="w-[48%] bg-purple-600 rounded-xl p-4 items-center"
                     onPress={() => navigation.navigate('SensorData')}
                   >

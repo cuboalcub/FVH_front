@@ -36,7 +36,8 @@ const PedidosScreen = () => {
       try {
         setLoading(true);
         const token = await AsyncStorage.getItem('token');  // ← AWAIT necesario aquí
-        const pedidos = await obtenerPedidos(token || undefined);
+        const group = await AsyncStorage.getItem('group');
+        const pedidos = await obtenerPedidos(token || undefined, group || undefined);
         setOrders(pedidos);
         console.log('Pedidos obtenidos:', pedidos);
         setError(null);
@@ -54,7 +55,8 @@ const PedidosScreen = () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('token');  // ← AWAIT necesario aquí
-      const pedidos = await obtenerPedidos(token || undefined);
+      const group = await AsyncStorage.getItem('group');
+      const pedidos = await obtenerPedidos(token || undefined , group || undefined);
       setOrders(pedidos);
       console.log('Pedidos obtenidos:', pedidos);
       setError(null);

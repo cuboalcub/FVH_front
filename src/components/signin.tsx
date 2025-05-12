@@ -58,6 +58,7 @@ export default function SignInScreen() {
       const resultado = await login(email, password);
       if (resultado.status === 200) {
         await AsyncStorage.setItem("token", resultado.token);
+        await AsyncStorage.setItem("group", resultado.group);
         const Type = resultado.userType == true ? "admin" : "user";
         setUserType(Type);
         await AsyncStorage.setItem("userType", Type);

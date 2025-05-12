@@ -32,7 +32,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos de cache
 /**
  * Obtiene todos los pedidos del usuario
  */
-export const obtenerPedidos = async (token?: string): Promise<Pedido[]> => {
+export const obtenerPedidos = async (token?: string, group?: string): Promise<Pedido[]> => {
   console.log("token", token);
   try {
     console.log("pedidos");
@@ -44,8 +44,13 @@ export const obtenerPedidos = async (token?: string): Promise<Pedido[]> => {
       headers['Authorization'] = `JWT ${token}`;
     }
 
+    const json ={
+      "id": group
+    }
+    console.log("json", json);
     const response = await fetch(API_ROUTES.PEDIDOS, {
-      method: 'GET',
+      method: 'POST',
+      body: JSON.stringify(json),
       headers
     });
     if (!response.ok) {

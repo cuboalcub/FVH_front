@@ -6,67 +6,51 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
 import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
-
+import { obtenerPedidos } from '../utils/pedidoService';
+import { get_charolas } from '../utils/invernaderos';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = NativeStackScreenProps<RootStackParamList, 'RackDetails'>;
-
-type Rack = {
-  id: string;
-  name: string;
-  status: 'optimal' | 'warning' | 'critical';
-};
-
-type Tray = {
-  id: string;
-  crop: string;
-  temp: string;
-  humidity: string;
-  growthStage: number;
-  lastWatered: string;
-};
-
-type Pedido = {
-  id: string;
-  description: string;
-};
-
-type DetallePedido = {
-  id: number;
-  descripcion: string;
-  cantidad: number;
-};
 
 export default function RackDetailsScreen({ route, navigation }: Props) {
   const { rackId, greenhouseId, name } = route.params;
-
-  const [racks, setRacks] = useState<Rack[]>([]);
-  const [trays, setTrays] = useState<Tray[]>([]);
-  const [selectedTray, setSelectedTray] = useState<Tray | null>(null);
+  const [idTray, setIdTray] = useState<string | null>(null);
+  const [racks, setRacks] = useState<any[]>([]);
+  const [trays, setTrays] = useState<any[]>([]);
+  const [selectedTray, setSelectedTray] = useState<any | null>(null);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
+  const [selectedPedido, setSelectedPedido] = useState("");
   const [trayNumber, setTrayNumber] = useState(trays.length + 1);
 
   // Mock data for pedidos
-  const [pedidos, setPedidos] = useState<Pedido[]>([
-    { id: 'MOCK1', description: 'Mock Pedido 1' },
-    { id: 'MOCK2', description: 'Mock Pedido 2' },
-    { id: 'MOCK3', description: 'Mock Pedido 3' },
-  ]);
+  const [pedidos, setPedidos] = useState<any[]>([]);
 
   // Mock data for detallePedido (will change based on selectedPedido)
-  const [detallePedido, setDetallePedido] = useState<DetallePedido[]>([]);
+  const [detallePedido, setDetallePedido] = useState<any[]>([]);
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [quantities, setQuantities] = useState<Record<number, string>>({});
 
   useEffect(() => {
     const fetchData = async () => {
-      const fetchedRacks = await getRacksForGreenhouse(greenhouseId);
-      setRacks(fetchedRacks);
+      const group = await AsyncStorage.getItem("group");
+      const token = await AsyncStorage.getItem("token");
+      const pedidos = await obtenerPedidos(token || undefined, group || undefined);
+      const Charolas = await get_charolas(rackId || "", token || undefined);
+      const detalles: any[] = [];
+      if (Array.isArray(pedidos)) {
+        pedidos.forEach(pedido => {
+          if (Array.isArray(pedido.detalle_pedido)) {
+            detalles.push(...pedido.detalle_pedido);
+          }
+        });
 
-      const fetchedTrays = await getTraysForRack(greenhouseId, rackId);
-      setTrays(fetchedTrays);
-
+        setDetallePedido(detalles);
+        console.log('Detalles recogidos:', detalles);
+      } else {
+        console.warn('pedidos no es un array:', pedidos);
+      }
+      setPedidos(pedidos);
+      setTrays(Charolas.data);
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
@@ -77,22 +61,17 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
     fetchData();
 
     return () => fadeAnim.setValue(0);
-  }, [greenhouseId, rackId]);
-
+  }, []);
   useEffect(() => {
-    if (modalVisible && selectedPedido) {
-      // Mock fetching detallePedido based on selectedPedido
-      if (selectedPedido === 'MOCK1') {
-        setDetallePedido([
-          { id: 1, descripcion: 'Mock Cultivo A', cantidad: 10 },
-          { id: 2, descripcion: 'Mock Cultivo B', cantidad: 5 },
-        ]);
-      } else if (selectedPedido === 'MOCK2') {
-        setDetallePedido([
-          { id: 3, descripcion: 'Cultivo X', cantidad: 15 },
-          { id: 4, descripcion: 'Cultivo Y', cantidad: 8 },
-          { id: 5, descripcion: 'Cultivo Z', cantidad: 20 },
-        ]);
+    if (modalVisible && selectedPedido !== null) {
+      const pedido = pedidos.find(p => p.id === selectedPedido);
+      if (pedido && Array.isArray(pedido.detalle_pedido)) {
+        const detalle = pedido.detalle_pedido.map((item: any) => ({
+          id: item.id,
+          descripcion: item.producto, // Asegúrate de que esta propiedad exista
+          cantidad: item.cantidad,
+        }));
+        setDetallePedido(detalle);
       } else {
         setDetallePedido([]);
       }
@@ -126,7 +105,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
 
     if (selectedCrops.length > 0) {
       selectedCrops.forEach(cropDescription => {
-        const newTray: Tray = {
+        const newTray: any = {
           id: `${Date.now()}-${Math.random()}`,
           crop: cropDescription,
           temp: '22°C',
@@ -155,14 +134,6 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
   const prevRack = currentIndex > 0 ? racks[currentIndex - 1] : null;
   const nextRack = currentIndex < racks.length - 1 ? racks[currentIndex + 1] : null;
 
-  const getStatusColor = (status: Rack['status'] | undefined) => {
-    switch (status) {
-      case 'optimal': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
 
   return (
     <BackgroundWrapper>
@@ -211,19 +182,6 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
                 <Text className="text-white/80 text-xs">Charolas</Text>
               </View>
 
-              <View className="items-center">
-                <Text className="text-white font-bold text-xl">
-                  {trays.reduce((acc, tray) => acc + parseInt(tray.temp), 0) / trays.length || 0}°C
-                </Text>
-                <Text className="text-white/80 text-xs">Temp. promedio</Text>
-              </View>
-
-              <View className="items-center">
-                <Text className="text-white font-bold text-xl">
-                  {trays.reduce((acc, tray) => acc + parseInt(tray.humidity), 0) / trays.length || 0}%
-                </Text>
-                <Text className="text-white/80 text-xs">Humedad promedio</Text>
-              </View>
             </View>
           </View>
 
@@ -234,62 +192,34 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
               <TouchableOpacity
                 key={tray.id}
                 className={`w-[48%] mb-4 ${selectedTray?.id === tray.id ? 'border-2 border-amber-400' : ''}`}
-                onPress={() => setSelectedTray(tray)}
+                onPress={() => {
+                  setModalVisible(true);
+                  // Ensure setIdTray is defined or remove this line if unnecessary
+                  if (typeof setIdTray === 'function') {
+                    setIdTray(tray.id);
+                  }
+                }}
                 activeOpacity={0.7}
+
               >
                 <View className="bg-white/10 p-3 rounded-xl">
                   <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-white font-bold">{tray.crop}</Text>
+                    <Text className="text-white font-bold">{tray.semilla}</Text>
                     <View className="flex-row items-center">
                       <MaterialCommunityIcons
-                        name="water"
+                        name="weight"
                         size={14}
                         color="#60a5fa"
                         style={{ marginRight: 4 }}
                       />
-                      <Text className="text-blue-300 text-xs">{tray.lastWatered}</Text>
+                      <Text className="text-gray-400 text-xs">{tray.peso}</Text>
                     </View>
-                  </View>
-
-                  <View className="flex-row justify-between">
-                    <View className="flex-row items-center">
-                      <MaterialCommunityIcons name="thermometer" size={14} color="#f87171" />
-                      <Text className="text-white text-xs ml-1">{tray.temp}</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <MaterialCommunityIcons name="water-percent" size={14} color="#60a5fa" />
-                      <Text className="text-white text-xs ml-1">{tray.humidity}</Text>
-                    </View>
-                  </View>
-
-                  <View className="mt-2">
-                    <View className="w-full bg-gray-600 rounded-full h-1.5">
-                      <View
-                        className="bg-amber-400 h-1.5 rounded-full"
-                        style={{ width: `${(tray.growthStage / 5) * 100}%` }}
-                      />
-                    </View>
-                    <Text className="text-white/80 text-xs mt-1">
-                      Etapa {tray.growthStage}/5
-                    </Text>
                   </View>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
         </ScrollView>
-
-        {/* Floating action button */}
-        <TouchableOpacity
-          className="absolute bottom-28 right-5 bg-amber-500 p-4 rounded-full shadow-xl"
-          onPress={() => {
-            setTrayNumber(trays.length + 1);
-            setModalVisible(true);
-          }}
-        >
-          <MaterialCommunityIcons name="plus" size={24} color="white" />
-        </TouchableOpacity>
-
         <Modal
           animationType="slide"
           transparent={true}
@@ -307,24 +237,25 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
               </TouchableOpacity>
 
               <Text className="text-lg font-bold text-center mb-4">
-                Agregar Bandeja #{trayNumber}
+                Agregar Bandeja #{idTray}
               </Text>
 
               <Text className="text-base font-medium mb-2">Selecciona Pedido</Text>
               <View className="border border-gray-300 rounded-lg mb-4">
                 <Picker
                   selectedValue={selectedPedido}
-                  onValueChange={(itemValue) => setSelectedPedido(itemValue)}
+                  onValueChange={(itemValue) => setSelectedPedido( String(itemValue) )}
                 >
                   <Picker.Item label="Selecciona un pedido" value={null} />
                   {pedidos.map(pedido => (
                     <Picker.Item
                       key={pedido.id}
-                      label={`Pedido #${pedido.id} - ${pedido.description}`}
+                      label={`Pedido #${pedido.id} - ${pedido.estado}`}
                       value={pedido.id}
                     />
                   ))}
                 </Picker>
+
               </View>
 
               {detallePedido.length > 0 && (
@@ -369,49 +300,4 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
       </Animated.View>
     </BackgroundWrapper>
   );
-}
-
-// Mock data functions with enhanced data
-async function getRacksForGreenhouse(greenhouseId: string): Promise<Rack[]> {
-  if (greenhouseId === '1') {
-    return [
-      { id: '1', name: 'Rack A', status: 'optimal' },
-      { id: '2', name: 'Rack B', status: 'warning' },
-    ];
-  } else if (greenhouseId === '2') {
-    return [
-      { id: '3', name: 'Rack X', status: 'optimal' },
-      { id: '2', name: 'Rack Y', status: 'optimal' },
-    ];
-  } else if (greenhouseId === '3') {
-    return [
-      { id: '1', name: 'Rack 1', status: 'critical' },
-      { id: '3', name: 'Rack 2', status: 'optimal' },
-    ];
-  } else {
-    return [];
-  }
-}
-
-async function getTraysForRack(greenhouseId: string, rackId: string): Promise<Tray[]> {
-  if (rackId === '1') {
-    return [
-      { id: '1', crop: 'Maíz', temp: '22°C', humidity: '84%', growthStage: 3, lastWatered: 'hace 2h' },
-      { id: '2', crop: 'Cebada', temp: '22°C', humidity: '83%', growthStage: 2, lastWatered: 'hace 3h' },
-      { id: '3', crop: 'Trigo', temp: '23°C', humidity: '78%', growthStage: 4, lastWatered: 'hace 1h' },
-      { id: '4', crop: 'Avena', temp: '24°C', humidity: '80%', growthStage: 1, lastWatered: 'hace 4h' },
-    ];
-  } else if (rackId === '2') {
-    return [
-      { id: '5', crop: 'Centeno', temp: '23°C', humidity: '78%', growthStage: 3, lastWatered: 'hace 2h' },
-      { id: '6', crop: 'Sorgo', temp: '22°C', humidity: '70%', growthStage: 5, lastWatered: 'hace 5h' },
-    ];
-  } else if (rackId === '3') {
-    return [
-      { id: '7', crop: 'Cebada', temp: '25°C', humidity: '75%', growthStage: 2, lastWatered: 'hace 3h' },
-      { id: '8', crop: 'Maíz', temp: '22°C', humidity: '70%', growthStage: 4, lastWatered: 'hace 1h' },
-    ];
-  } else {
-    return [];
-  }
 }
