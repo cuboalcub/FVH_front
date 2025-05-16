@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator
 import { LineChart } from 'react-native-chart-kit';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
-import { useMQTT } from './useMQTT';
+import { useMQTT } from  '../hooks/useMQTT';
 
 const ConfigScreen = () => {
   const { messages } = useMQTT(); // 📡 Hook personalizado
+  console.log("mensage"+ messages);
+  
   const [chartData, setChartData] = useState({
     labels: [] as string[],
     datasets: [{ data: [] as number[] }],

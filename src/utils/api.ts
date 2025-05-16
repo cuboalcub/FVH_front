@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:8000/";
+export const BASE_URL = "https://6b0p61tb-8000.usw3.devtunnels.ms/";
 
 // Endpoints de la API
 export const API_ROUTES = {
