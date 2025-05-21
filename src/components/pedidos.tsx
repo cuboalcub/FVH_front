@@ -208,7 +208,7 @@ const PedidosScreen = () => {
                 <Text className="text-xs text-gray-500">{formatearFechaPedido(item.tiempo_final)}</Text>
                 <Text className={`text-xs font-medium ${
                   item.estado === 'Pendiente' ? 'text-amber-500' : 
-                  item.estado === 'Confirmado' ? 'text-green-500' : 
+                  item.estado === 'En progreso' ? 'text-green-500' : 
                   'text-gray-500'
                 }`}>
                   {item.estado}

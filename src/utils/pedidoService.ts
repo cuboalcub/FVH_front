@@ -1,7 +1,7 @@
 import { API_ROUTES } from "./api";
 
 // Tipos de datos basados en tu estructura JSON
-export type EstadoPedido = 'Pendiente' | 'Confirmado' | 'Cancelado' | 'Completado';
+export type EstadoPedido = 'Pendiente' | 'En progreso' | 'Confirmado' | 'Cancelado' | 'Completado';
 
 export interface DetallePedido {
   id: number ; // ID puede ser null si no se ha asignado

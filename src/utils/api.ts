@@ -23,4 +23,8 @@ export const API_ROUTES = {
   RACKS: (id: string | number) => `${BASE_URL}invernadero/racks/${id}`,
 
   CHAROLAS: (id: string | number) => `${BASE_URL}invernadero/bandejas/${id}`,
-};
+
+  PATCH_PEDIDO: `${BASE_URL}pedido/charola`,
+
+  PATCH_CHAROLA: `${BASE_URL}invernadero/bandejas/peso_semilla`
+};      
