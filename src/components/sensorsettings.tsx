@@ -4,41 +4,93 @@ import { LineChart } from 'react-native-chart-kit';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
+import { useMQTT } from '../hooks/useMQTT';
 
 export default function SensorDataScreen() {
-  const [activeTab, setActiveTab] = useState('temperature');
+  const [activeTab, setActiveTab] = useState<'temperature' | 'humidity' | 'light'>('temperature');
   const [isLoading, setIsLoading] = useState(true);
+  const [sensorValues, setSensorValues] = useState({
+    temperature: [] as number[],
+    humidity: [] as number[],
+    light: [] as number[],
+  });
 
-  // Datos simulados de sensores
-  const sensorData = {
-    temperature: {
-      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-      datasets: [{ data: [22, 24, 26, 28, 25, 23] }],
-      unit: '°C',
-      icon: 'thermometer',
-    },
-    humidity: {
-      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-      datasets: [{ data: [60, 65, 70, 75, 72, 68] }],
-      unit: '%',
-      icon: 'water-percent',
-    },
-    light: {
-      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-      datasets: [{ data: [200, 500, 800, 1200, 900, 400] }],
-      unit: 'lux',
-      icon: 'white-balance-sunny',
+  const { messages } = useMQTT([
+    "greenhouse/greenhouse-1/sensor/temperature",
+    "greenhouse/greenhouse-1/sensor/humidity",
+    "greenhouse/greenhouse-1/sensor/light"
+  ]);
+
+  useEffect(() => {
+    const allTopics = Object.keys(messages);
+    if (allTopics.length === 0) return;
+  
+    // Combine the latest message from each topic (if any)
+    allTopics.forEach(topic => {
+      const topicMessages = messages[topic];
+      if (!topicMessages?.length) return;
+  
+      const lastMessage = topicMessages[topicMessages.length - 1];
+  
+      try {
+        const valueObj = JSON.parse(lastMessage);
+        const newValue = parseFloat(valueObj.value);
+  
+        if (!isNaN(newValue)) {
+          setSensorValues((prev) => {
+            const updatedValues = { ...prev };
+  
+            if (topic.includes('temperature')) {
+              const newArr = [...prev.temperature, newValue];
+              if (newArr.length > 10) newArr.shift();
+              updatedValues.temperature = newArr;
+            } else if (topic.includes('humidity')) {
+              const newArr = [...prev.humidity, newValue];
+              if (newArr.length > 10) newArr.shift();
+              updatedValues.humidity = newArr;
+            } else if (topic.includes('light')) {
+              const newArr = [...prev.light, newValue];
+              if (newArr.length > 10) newArr.shift();
+              updatedValues.light = newArr;
+            }
+  
+            return updatedValues;
+          });
+        }
+      } catch (e) {
+        console.error('❌ Error procesando mensaje MQTT:', e);
+      }
+    });
+  }, [messages]);
+  
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const chartConfig = {
+    backgroundColor: '#ffffff',
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    decimalPlaces: 1,
+    color: (opacity = 1) => `rgba(239, 108, 0, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    strokeWidth: 2,
+    propsForDots: {
+      r: '4',
+      strokeWidth: '2',
+      stroke: '#ff8c00',
     },
   };
 
-  useEffect(() => {
-    // Simular carga de datos
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const chartData = {
+    labels: sensorValues[activeTab].map((_, i) => `${i + 1}`),
+    datasets: [{ data: sensorValues[activeTab].length ? sensorValues[activeTab] : [0] }],
+    unit: activeTab === 'temperature' ? '°C' : activeTab === 'humidity' ? '%' : 'lux',
+    icon: activeTab === 'temperature' ? 'thermometer' :
+          activeTab === 'humidity' ? 'water-percent' : 'white-balance-sunny'
+  };
 
   const handleCalibration = () => {
     Alert.alert(
@@ -49,22 +101,6 @@ export default function SensorDataScreen() {
         { text: 'Confirmar', onPress: () => Alert.alert('Calibración', 'Calibración iniciada') },
       ]
     );
-  };
-
-  const chartConfig = {
-    backgroundColor: '#ffffff',
-    backgroundGradientFrom: '#ffffff',
-    backgroundGradientTo: '#ffffff',
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(239, 108, 0, ${opacity})`, // Color naranja
-    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    strokeWidth: 2,
-    useShadowColorFromDataset: false,
-    propsForDots: {
-      r: '4',
-      strokeWidth: '2',
-      stroke: '#ff8c00',
-    },
   };
 
   if (isLoading) {
@@ -84,23 +120,26 @@ export default function SensorDataScreen() {
     <BackgroundWrapper>
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <Text className="text-2xl font-bold text-gray-800 mb-4">Monitoreo de Sensores</Text>
-        
+
         {/* Selector de pestañas */}
         <View className="flex-row justify-around mb-6 bg-white rounded-lg p-1">
-          {Object.keys(sensorData).map((key) => (
+          {['temperature', 'humidity', 'light'].map((key) => (
             <TouchableOpacity
               key={key}
               className={`py-2 px-4 rounded-md ${activeTab === key ? 'bg-amber-500' : ''}`}
-              onPress={() => setActiveTab(key)}
+              onPress={() => setActiveTab(key as typeof activeTab)}
             >
               <View className="flex-row items-center">
                 <MaterialCommunityIcons 
-                  name={sensorData[key].icon} 
-                  size={20} 
+                  name={
+                    key === 'temperature' ? 'thermometer' :
+                    key === 'humidity' ? 'water-percent' : 'white-balance-sunny'
+                  }
+                  size={20}
                   color={activeTab === key ? 'white' : '#6b7280'} 
                 />
                 <Text className={`ml-2 ${activeTab === key ? 'text-white font-medium' : 'text-gray-600'}`}>
-                  {key === 'temperature' ? 'Temperatura' : 
+                  {key === 'temperature' ? 'Temperatura' :
                    key === 'humidity' ? 'Humedad' : 'Luminosidad'}
                 </Text>
               </View>
@@ -108,62 +147,62 @@ export default function SensorDataScreen() {
           ))}
         </View>
 
-        {/* Gráfico seleccionado */}
+        {/* Gráfico */}
         <View className="bg-white rounded-xl p-4 mb-6 shadow-sm">
           <View className="flex-row items-center mb-3">
             <MaterialCommunityIcons 
-              name={sensorData[activeTab].icon} 
+              name={chartData.icon} 
               size={24} 
               color="#ef6c00" 
             />
             <Text className="text-lg font-semibold ml-2">
-              {activeTab === 'temperature' ? 'Temperatura' : 
+              {activeTab === 'temperature' ? 'Temperatura' :
                activeTab === 'humidity' ? 'Humedad' : 'Nivel de Luminosidad'}
             </Text>
           </View>
-          
+
           <LineChart
-            data={sensorData[activeTab]}
+            data={{
+              labels: chartData.labels,
+              datasets: chartData.datasets
+            }}
             width={350}
             height={220}
-            yAxisSuffix={sensorData[activeTab].unit}
+            yAxisSuffix={chartData.unit}
             yAxisInterval={1}
             chartConfig={chartConfig}
             bezier
-            style={{
-              borderRadius: 16,
-              paddingRight: 30, // Espacio para el último punto
-            }}
+            style={{ borderRadius: 16, paddingRight: 30 }}
           />
         </View>
 
-        {/* Información adicional */}
+        {/* Estadísticas */}
         <View className="bg-white rounded-xl p-4 mb-6">
           <Text className="text-lg font-semibold mb-2">Estadísticas</Text>
           <View className="flex-row justify-between">
             <View className="items-center">
               <Text className="text-gray-500 text-sm">Mínimo</Text>
               <Text className="text-xl font-bold">
-                {Math.min(...sensorData[activeTab].datasets[0].data)}{sensorData[activeTab].unit}
+                {sensorValues[activeTab].length ? Math.min(...sensorValues[activeTab]).toFixed(1) : '--'}{chartData.unit}
               </Text>
             </View>
             <View className="items-center">
               <Text className="text-gray-500 text-sm">Promedio</Text>
               <Text className="text-xl font-bold">
-                {(sensorData[activeTab].datasets[0].data.reduce((a, b) => a + b, 0) / 
-                 sensorData[activeTab].datasets[0].data.length).toFixed(1)}{sensorData[activeTab].unit}
+                {sensorValues[activeTab].length ? (
+                  (sensorValues[activeTab].reduce((a, b) => a + b, 0) / sensorValues[activeTab].length).toFixed(1)
+                ) : '--'}{chartData.unit}
               </Text>
             </View>
             <View className="items-center">
               <Text className="text-gray-500 text-sm">Máximo</Text>
               <Text className="text-xl font-bold">
-                {Math.max(...sensorData[activeTab].datasets[0].data)}{sensorData[activeTab].unit}
+                {sensorValues[activeTab].length ? Math.max(...sensorValues[activeTab]).toFixed(1) : '--'}{chartData.unit}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Botón de calibración */}
         <TouchableOpacity 
           className="flex-row items-center justify-center bg-amber-500 py-3 rounded-lg mb-6"
           onPress={handleCalibration}
