@@ -5,6 +5,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
 import { useMQTT } from '../hooks/useMQTT';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { get_invernadores } from '../utils/invernaderos';
 
 export default function SensorDataScreen() {
   const [activeTab, setActiveTab] = useState<'temperature' | 'humidity' | 'light'>('temperature');
@@ -15,31 +17,53 @@ export default function SensorDataScreen() {
     light: [] as number[],
   });
 
-  const { messages } = useMQTT([
-    "greenhouse/greenhouse-1/sensor/temperature",
-    "greenhouse/greenhouse-1/sensor/humidity",
-    "greenhouse/greenhouse-1/sensor/light"
-  ]);
+  const [greenhouses, setGreenhouses] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const currentGreenhouse = greenhouses[currentIndex];
+  const topicBase = currentGreenhouse ? `greenhouse/greenhouse-${currentGreenhouse.id}/sensor` : '';
+
+  const { messages } = useMQTT(
+    topicBase ? [
+      `${topicBase}/temperature`,
+      `${topicBase}/humidity`,
+      `${topicBase}/light`
+    ] : []
+  );
+
+  useEffect(() => {
+    const fetchGreenhouses = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const res = await get_invernadores(token || undefined);
+        if (res.status === 200 && Array.isArray(res.data)) {
+          setGreenhouses(res.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener invernaderos:', error);
+      }
+    };
+    fetchGreenhouses();
+  }, []);
 
   useEffect(() => {
     const allTopics = Object.keys(messages);
     if (allTopics.length === 0) return;
-  
-    // Combine the latest message from each topic (if any)
+
     allTopics.forEach(topic => {
       const topicMessages = messages[topic];
       if (!topicMessages?.length) return;
-  
+
       const lastMessage = topicMessages[topicMessages.length - 1];
-  
+
       try {
         const valueObj = JSON.parse(lastMessage);
         const newValue = parseFloat(valueObj.value);
-  
+
         if (!isNaN(newValue)) {
           setSensorValues((prev) => {
             const updatedValues = { ...prev };
-  
+
             if (topic.includes('temperature')) {
               const newArr = [...prev.temperature, newValue];
               if (newArr.length > 10) newArr.shift();
@@ -53,7 +77,7 @@ export default function SensorDataScreen() {
               if (newArr.length > 10) newArr.shift();
               updatedValues.light = newArr;
             }
-  
+
             return updatedValues;
           });
         }
@@ -62,12 +86,11 @@ export default function SensorDataScreen() {
       }
     });
   }, [messages]);
-  
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [currentIndex]);
 
   const chartConfig = {
     backgroundColor: '#ffffff',
@@ -103,13 +126,23 @@ export default function SensorDataScreen() {
     );
   };
 
-  if (isLoading) {
+  const changeGreenhouse = (direction: 'prev' | 'next') => {
+    if (direction === 'prev' && currentIndex > 0) {
+      setSensorValues({ temperature: [], humidity: [], light: [] });
+      setCurrentIndex(currentIndex - 1);
+    } else if (direction === 'next' && currentIndex < greenhouses.length - 1) {
+      setSensorValues({ temperature: [], humidity: [], light: [] });
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  if (!currentGreenhouse || isLoading) {
     return (
       <BackgroundWrapper>
         <View className="flex-1 justify-center items-center">
           <View className="bg-white/90 p-6 rounded-xl items-center">
             <MaterialCommunityIcons name="progress-clock" size={40} color="#ef6c00" />
-            <Text className="text-lg font-medium mt-2">Cargando datos de sensores...</Text>
+            <Text className="text-lg font-medium mt-2">Cargando sensores...</Text>
           </View>
         </View>
       </BackgroundWrapper>
@@ -119,9 +152,33 @@ export default function SensorDataScreen() {
   return (
     <BackgroundWrapper>
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
-        <Text className="text-2xl font-bold text-gray-800 mb-4">Monitoreo de Sensores</Text>
+        <View className="flex-row justify-between items-center mb-4">
+          <TouchableOpacity
+            onPress={() => changeGreenhouse('prev')}
+            disabled={currentIndex === 0}
+          >
+            <MaterialCommunityIcons
+              name="chevron-left"
+              size={32}
+              color={currentIndex === 0 ? '#ccc' : '#ef6c00'}
+            />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-gray-800">
+            {currentGreenhouse?.nombre || `Invernadero ${currentGreenhouse?.id}`}
+          </Text>
+          <TouchableOpacity
+            onPress={() => changeGreenhouse('next')}
+            disabled={currentIndex === greenhouses.length - 1}
+          >
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={32}
+              color={currentIndex === greenhouses.length - 1 ? '#ccc' : '#ef6c00'}
+            />
+          </TouchableOpacity>
+        </View>
 
-        {/* Selector de pestañas */}
+        {/* Tabs */}
         <View className="flex-row justify-around mb-6 bg-white rounded-lg p-1">
           {['temperature', 'humidity', 'light'].map((key) => (
             <TouchableOpacity
@@ -147,7 +204,7 @@ export default function SensorDataScreen() {
           ))}
         </View>
 
-        {/* Gráfico */}
+        {/* Graph */}
         <View className="bg-white rounded-xl p-4 mb-6 shadow-sm">
           <View className="flex-row items-center mb-3">
             <MaterialCommunityIcons 
@@ -176,7 +233,7 @@ export default function SensorDataScreen() {
           />
         </View>
 
-        {/* Estadísticas */}
+        {/* Stats */}
         <View className="bg-white rounded-xl p-4 mb-6">
           <Text className="text-lg font-semibold mb-2">Estadísticas</Text>
           <View className="flex-row justify-between">
@@ -216,3 +273,4 @@ export default function SensorDataScreen() {
     </BackgroundWrapper>
   );
 }
+
