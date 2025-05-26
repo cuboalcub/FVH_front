@@ -17,6 +17,7 @@ import SensorDataScreen from "./components/sensorsettings";
 import LogsScreen from "./components/notifications";
 import MQTTScreen from "./components/MQTTScreen";
 import "../global.css";
+import ActuatorScreen from "./components/actuador";
 
 // Type definitions for navigation parameters
 export type RootStackParamList = {
@@ -39,6 +40,10 @@ export type RootStackParamList = {
     rackId: string; 
     greenhouseId: string;
     name?: string; // Added optional name
+  };
+  ConfigScreen: undefined;
+  ActuatorScreen: {
+    greenhouseId: number;
   };
   Config: undefined;
   MQTT: undefined;
@@ -135,19 +140,26 @@ export default function App() {
           {/* Configuration Screens */}
           <Stack.Group screenOptions={{ presentation: 'modal' }}>
             <Stack.Screen 
-              name="Config" 
+              name="ConfigScreen" 
               component={ConfigScreen} 
               options={{ title: 'Configuración' }} 
             />
+            
             <Stack.Screen 
               name="ConfigUsuariosScreen" 
               component={ConfigUsuariosScreen} 
-              options={{ title: 'Administrar Usuarios' }} 
+              options={{ title: 'Administrar Usuarios' }}
             />
-            <Stack.Screen 
-              name="SensorData" 
-              component={SensorDataScreen} 
-              options={{ title: 'Configuración de Sensores' }} 
+            <Stack.Screen
+              name="ActuatorScreen"
+              component={ActuatorScreen}
+              options={{ title: 'Control de Actuadores' }}
+            />
+
+            <Stack.Screen
+              name="SensorData"
+              component={SensorDataScreen}
+              options={{ title: 'Configuración de Sensores' }}
             />
             <Stack.Screen 
               name="Notifications" 

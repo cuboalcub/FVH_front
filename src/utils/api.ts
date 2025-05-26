@@ -24,6 +24,9 @@ export const API_ROUTES = {
 
   CHAROLAS: (id: string | number) => `${BASE_URL}invernadero/bandejas/${id}`,
 
+  SENSORES: (id: string) => `${BASE_URL}mqtt/get_topic_s/${id}`,
+  ACTUADORES: (id: string) => `${BASE_URL}mqtt/get_topic_a/${id}`,
+
   PATCH_PEDIDO: `${BASE_URL}pedido/charola`,
 
   PATCH_CHAROLA: `${BASE_URL}invernadero/bandejas/peso_semilla`

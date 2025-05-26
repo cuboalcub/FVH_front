@@ -107,9 +107,19 @@ export default function GreenhousesScreen({ navigation }: Props) {
                     onPress={() => navigation.navigate('SensorData')}
                   >
                     <MaterialIcons name="settings" size={28} color="white" />
-                    <Text className="text-white font-medium mt-2">Configuración</Text>
+                    <Text className="text-white font-medium mt-2">Configuración Sensores</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className="w-[48%] bg-purple-600 rounded-xl p-4 items-center"
+                    onPress={() => navigation.navigate('ConfigScreen')}
+                  >
+                    <MaterialIcons name="settings" size={28} color="white" />
+                    <Text className="text-white font-medium mt-2">Configuración </Text>
                   </TouchableOpacity>
                 </>
+              
+
               )}
             </View>
           </View>

@@ -1,163 +1,92 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
+// pagina solo para botones de activar y desactivar botones 
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
-import { useMQTT } from  '../hooks/useMQTT';
+import { get_invernadores } from '../utils/invernaderos';
+import { RootStackParamList } from '../App';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MaterialIcons } from '@expo/vector-icons';
 
-const ConfigScreen = () => {
-  const { messages } = useMQTT(); // 📡 Hook personalizado
-  console.log("mensage"+ messages);
-  
-  const [chartData, setChartData] = useState({
-    labels: [] as string[],
-    datasets: [{ data: [] as number[] }],
-  });
-  const [loading, setLoading] = useState(true);
+type Props = NativeStackScreenProps<RootStackParamList, 'Greenhouses'>;
 
-  // Agrega un nuevo dato y mantiene solo los últimos 10
-  const addNewData = (value: number) => {
-    setChartData(prev => {
-      const newData = [...prev.datasets[0].data];
-      const newLabels = [...prev.labels];
+export default function ConfigScreen({ navigation }: Props) {
+  const [greenhouses, setGreenhouses] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-      if (newData.length >= 10) {
-        newData.shift();
-        newLabels.shift();
-      }
-
-      newData.push(value);
-      newLabels.push(new Date().toLocaleTimeString());
-
-      return {
-        labels: newLabels,
-        datasets: [{ data: newData }],
-      };
-    });
-  };
-
-  // Escucha los mensajes del broker
-  useEffect(() => {
-    if (messages.length > 0) {
-      const lastMsg = messages[messages.length - 1];
-      const value = parseFloat(lastMsg);
-      if (!isNaN(value)) {
-        addNewData(value);
-      }
-    }
-  }, [messages]);
+  const currentGreenhouse = greenhouses[currentIndex];
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
+    const fetchGreenhouses = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const res = await get_invernadores(token || undefined);
+        if (res.status === 200 && Array.isArray(res.data)) {
+          setGreenhouses(res.data);
+        }
+      } catch (error) {
+        console.error('❌ Error al obtener invernaderos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchGreenhouses();
   }, []);
 
-  const activateSprinklers = () => alert('Aspersores Activados');
-  const activateLights = () => alert('Luces Activadas');
-
-  if (loading) {
+  if (isLoading || !currentGreenhouse) {
     return (
       <BackgroundWrapper>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#A0522D" />
-          <Text style={styles.loadingText}>Cargando configuración...</Text>
+        <View className="flex-1 justify-center items-center">
+          <View className="bg-white/90 p-6 rounded-xl items-center">
+            <MaterialCommunityIcons name="progress-clock" size={40} color="#ef6c00" />
+            <Text className="text-lg font-medium mt-2">Cargando configuración...</Text>
+          </View>
         </View>
       </BackgroundWrapper>
     );
   }
 
   return (
+
     <BackgroundWrapper>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Panel de Control</Text>
-        <Text style={styles.subtitle}>Datos recibidos por MQTT</Text>
-        <View style={styles.chartContainer}>
-          <LineChart
-            data={chartData}
-            width={320}
-            height={200}
-            yAxisLabel=""
-            chartConfig={{
-              backgroundColor: '#de9c21',
-              backgroundGradientFrom: '#de9c21',
-              backgroundGradientTo: '#de9c21',
-              decimalPlaces: 2,
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              style: {
-                borderRadius: 8,
-              },
-              propsForDots: {
-                r: '4',
-                strokeWidth: '2',
-                stroke: '#ADD8E6',
-              },
-            }}
-            style={styles.chart}
-          />
-        </View>
-        <TouchableOpacity style={styles.button} onPress={activateSprinklers}>
-          <Text style={styles.buttonText}>Activar Aspersores</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={activateLights}>
-          <Text style={styles.buttonText}>Activar Luces</Text>
-        </TouchableOpacity>
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+
+
+
+    {/* Greenhouse Cards */}
+    <View className="mb-6">
+            <Text className="text-lg text-white mb-3">Invernaderos</Text>
+            <View className="space-y-3">
+              {greenhouses.map((house) => (
+                <TouchableOpacity
+                  key={house.id}
+                  className="bg-white/10 rounded-xl p-4 border border-white/20"
+                  onPress={() => navigation.navigate('ActuatorScreen', {
+                    greenhouseId: house.id
+                  })}
+                >
+                  <View className="flex-row items-center">
+                    <Image
+                      source={require('../../assets/greenhouse.png')}
+                      className="w-16 h-16 mr-3"
+                    />
+                    <View className="flex-1">
+                      <View className="flex-row justify-between items-center">
+                        <Text className="text-white font-bold text-lg">{house.ubicacion}</Text>
+                      </View>
+                    </View>
+                    <MaterialIcons name="chevron-right" size={24} color="white" />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
       </ScrollView>
       <CustomBottomBar />
     </BackgroundWrapper>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#eee',
-    marginBottom: 20,
-  },
-  chartContainer: {
-    backgroundColor: '#de9c21',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  chart: {
-    borderRadius: 8,
-  },
-  button: {
-    backgroundColor: '#de9c21',
-    padding: 18,
-    borderRadius: 12,
-    width: 280,
-    alignItems: 'center',
-    marginVertical: 8,
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#A0522D',
-  },
-});
-
-export default ConfigScreen;
+}
