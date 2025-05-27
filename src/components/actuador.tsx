@@ -88,8 +88,104 @@ export default function ActuatorScreen() {
         </View>
 
         <View className="bg-white/90 rounded-xl p-6 shadow-md">
-          <Text className="text-lg font-semibold mb-2">Estado MQTT</Text>
-          <Text className="text-gray-700 mb-4">{currentStatus}</Text>
+          <Text className="text-lg font-semibold mb-2">Datos Actuador</Text>
+          <Text className="text-gray-700 mb-4">Estado</Text>
+
+          <View className="flex-row items-center mb-4">
+            {(() => {
+              let statusColor = 'gray';
+              let displayStatus = 'Sin datos';
+
+              try {
+                // Match each JSON-like substring
+                const matches = (Array.isArray(currentStatus) ? currentStatus.join('') : currentStatus).match(/\{[^}]+\}/g);
+
+                if (matches && matches.length > 0) {
+                  // Parse the last JSON object
+                  const lastState = JSON.parse(matches[matches.length - 1]);
+                  const stateValue = (lastState.state || '').toLowerCase();
+
+                  if (stateValue === 'on') {
+                    statusColor = 'green';
+                    displayStatus = 'Encendido';
+                  } else if (stateValue === 'off') {
+                    statusColor = 'red';
+                    displayStatus = 'Apagado';
+                  } else {
+                    displayStatus = stateValue;
+                  }
+                }
+              } catch (e) {
+                console.error('Error parsing status JSON:', e);
+              }
+
+              
+
+              return (
+                <>
+                  <View
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      backgroundColor: statusColor,
+                      marginRight: 8,
+                    }}
+                  />
+                  <Text className="text-gray-700">{displayStatus}</Text>
+                </>
+              );
+            })()}
+          </View>
+          <Text className="text-gray-700 mb-4"> Placeholder Modo</Text>
+
+<View className="flex-row items-center mb-4">
+  {(() => {
+    let statusColor = 'gray';
+    let displayStatus = 'Sin datos';
+
+    try {
+      // Match each JSON-like substring
+      const matches = (Array.isArray(currentStatus) ? currentStatus.join('') : currentStatus).match(/\{[^}]+\}/g);
+
+      if (matches && matches.length > 0) {
+        // Parse the last JSON object
+        const lastState = JSON.parse(matches[matches.length - 1]);
+        const stateValue = (lastState.state || '').toLowerCase();
+
+        if (stateValue === 'on') {
+          statusColor = 'green';
+          displayStatus = 'Automatico';
+        } else if (stateValue === 'off') {
+          statusColor = 'red';
+          displayStatus = 'Manual';
+        } else {
+          displayStatus = stateValue;
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing status JSON:', e);
+    }
+
+    
+
+    return (
+      <>
+        <View
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: 8,
+            backgroundColor: statusColor,
+            marginRight: 8,
+          }}
+        />
+        <Text className="text-gray-700">{displayStatus}</Text>
+      </>
+    );
+  })()}
+</View>
+
 
           <TouchableOpacity
             className="bg-orange-600 px-4 py-3 rounded-lg mt-2"
