@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, useWindowDimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BackgroundWrapper from './background';
@@ -11,6 +11,8 @@ import { get_invernadores } from '../utils/invernaderos';
 export default function SensorDataScreen() {
   const [activeTab, setActiveTab] = useState<'temperature' | 'humidity' | 'light'>('temperature');
   const [isLoading, setIsLoading] = useState(true);
+  const { width } = useWindowDimensions();
+  const chartWidth = width - 150;
   const [sensorValues, setSensorValues] = useState({
     temperature: [] as number[],
     humidity: [] as number[],
@@ -152,7 +154,7 @@ export default function SensorDataScreen() {
   return (
     <BackgroundWrapper>
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
-        <View className="flex-row justify-between items-center mb-4">
+        <View className="flex-row justify-around items-center mb-4">
           <TouchableOpacity
             onPress={() => changeGreenhouse('prev')}
             disabled={currentIndex === 0}
@@ -223,7 +225,7 @@ export default function SensorDataScreen() {
               labels: chartData.labels,
               datasets: chartData.datasets
             }}
-            width={350}
+            width={chartWidth}
             height={220}
             yAxisSuffix={chartData.unit}
             yAxisInterval={1}
