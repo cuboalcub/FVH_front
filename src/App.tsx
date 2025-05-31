@@ -1,184 +1,80 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { UserProvider } from "./components/usercontext";
+import { notiService } from "./utils/noti/noti";
+import { Alert } from "react-native";
 
-// Screen imports
+// Importa la pantalla de pruebas
+import MQTTTestScreen from "./utils/MQTTTestScreen";
+
+// Tus imports de pantallas existentes...
 import SignInScreen from '../src/components/signin';
 import SignUpScreen from '../src/components/signup';
-import GreenhousesScreen from '../src/components/menuinvernaderos';
-import GreenhouseDetailsScreen from '../src/components/invernaderosdetalles';
-import RackDetailsScreen from './components/rackdetalles';
-import ShelfDetailsScreen from './components/estantes';
-import ConfigScreen from './components/config';
-import PedidosScreen from './components/pedidos';
-import ConfigUsuariosScreen from "./components/userssettings";
-import SensorDataScreen from "./components/sensorsettings";
-import LogsScreen from "./components/notifications";
-import MQTTScreen from "./components/MQTTScreen";
-import "../global.css";
-import ActuatorScreen from "./components/actuador";
+// ... otros imports ...
 
-// Type definitions for navigation parameters
 export type RootStackParamList = {
-  SignIn: undefined;
-  SignUp: undefined;
-  Greenhouses: undefined;
-  GreenhouseDetails: { 
-    greenhouseId: string; 
-    name: string;
-    status?: 'optimal' | 'warning' | 'critical'; // Added optional status
-  };
-  RackDetails: { 
-    rackId: string; 
-    greenhouseId: string; 
-    name: string;
-    status?: 'optimal' | 'warning' | 'critical'; // Added optional status
-  };
-  ShelfDetails: { 
-    shelfId: string; 
-    rackId: string; 
-    greenhouseId: string;
-    name?: string; // Added optional name
-  };
-  ConfigScreen: undefined;
-  ActuatorScreen: {
-    greenhouseId: number;
-  };
-  Config: undefined;
-  MQTT: undefined;
-  PedidosScreen: undefined;
-  ConfigUsuariosScreen: undefined;
-  SensorData: undefined;
-  Notifications: undefined;
-  TrayDetails: { trayId: string }; 
+  // ... tus tipos existentes ...
+  MQTTTest: undefined; // Añade este tipo para la pantalla de pruebas
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Screen options configuration
-const screenOptions = {
-  headerShown: true,
-
-  // Header appearance
-  headerStyle: {
-    backgroundColor: '#2c3e50', // Dark blue background
-  },
-  headerTintColor: '#ffffff', // White color for back button and title
-  headerTitleStyle: {
-    fontWeight: 'bold', // Bold title text
-  },
-  headerBackTitleVisible: false, // Hide iOS back button text
-
-  // Transition animation
-  animation: 'slide_from_right' as const, // Smooth screen transition
-};
-
-
 export default function App() {
+  // Inicialización del servicio de notificaciones
+  useEffect(() => {
+    const initializeServices = async () => {
+      try {
+        await notiService.init({
+          mqttBrokerUrl: 'mqtt://test.mosquitto.org:1883', // Broker público para pruebas
+          mqttOptions: {
+            clientId: `app-${Date.now()}`
+          }
+        });
+        console.log('Servicio de notificaciones inicializado');
+      } catch (error) {
+        Alert.alert('Error', 'No se pudo iniciar el servicio de notificaciones');
+        console.error('Error inicializando notiService:', error);
+      }
+    };
+
+    initializeServices();
+  }, []);
+
   return (
     <UserProvider>
       <NavigationContainer>
         <Stack.Navigator 
           initialRouteName="SignIn"
-          screenOptions={screenOptions}
+          screenOptions={{
+            headerShown: true,
+            headerStyle: { backgroundColor: '#2c3e50' },
+            headerTintColor: '#ffffff',
+            headerTitleStyle: { fontWeight: 'bold' },
+            headerBackTitleVisible: false,
+            animation: 'slide_from_right'
+          }}
         >
-          {/* Auth Screens */}
+          {/* Tus pantallas existentes */}
           <Stack.Screen 
             name="SignIn" 
             component={SignInScreen} 
-            options={{ 
-              title: 'Iniciar Sesión',
-              headerShown: false // Full-screen for auth
-            }} 
+            options={{ headerShown: false }} 
           />
-          <Stack.Screen 
-            name="SignUp" 
-            component={SignUpScreen} 
-            options={{ 
-              title: 'Crear Cuenta',
-              headerShown: false // Full-screen for auth
-            }} 
-          />
-
-<Stack.Screen 
-  name="Greenhouses"
-  component={GreenhousesScreen}
-  options={{
-    animationDuration: 10, // Disable animation
-    title: 'Mis Invernaderos',
-    headerShown: false,
-    headerLeft: () => null, // Quita el botón de atrás
-    gestureEnabled: false, // Desactiva gesto de deslizamiento (iOS)
-  }}
-/>
-
           
-          {/* Greenhouse Flow */}
-          <Stack.Screen 
-            name="GreenhouseDetails" 
-            component={GreenhouseDetailsScreen} 
-            options={({ route }) => ({ 
-              title: route.params.name || 'Invernadero'
-            })} 
-          />
-          <Stack.Screen 
-            name="RackDetails" 
-            component={RackDetailsScreen} 
-            options={({ route }) => ({ 
-              title: route.params.name || 'Rack'
-            })} 
-          />
-          <Stack.Screen 
-            name="ShelfDetails" 
-            component={ShelfDetailsScreen} 
-            options={({ route }) => ({ 
-              title: route.params.name || 'Estante'
-            })} 
-          />
+          {/* ... otras pantallas ... */}
 
-          {/* Configuration Screens */}
-          <Stack.Group screenOptions={{ presentation: 'modal' }}>
-            <Stack.Screen 
-              name="ConfigScreen" 
-              component={ConfigScreen} 
-              options={{ title: 'Configuración' }} 
-            />
-            
-            <Stack.Screen 
-              name="ConfigUsuariosScreen" 
-              component={ConfigUsuariosScreen} 
-              options={{ title: 'Administrar Usuarios' }}
-            />
+          {/* Pantalla de pruebas - solo visible en desarrollo */}
+          {__DEV__ && (
             <Stack.Screen
-              name="ActuatorScreen"
-              component={ActuatorScreen}
-              options={{ title: 'Control de Actuadores' }}
+              name="MQTTTest"
+              component={MQTTTestScreen}
+              options={{ 
+                title: 'Pruebas de Notificaciones',
+                headerStyle: { backgroundColor: '#4a148c' } // Morado para distinguir
+              }}
             />
-
-            <Stack.Screen
-              name="SensorData"
-              component={SensorDataScreen}
-              options={{ title: 'Configuración de Sensores' }}
-            />
-            <Stack.Screen 
-              name="Notifications" 
-              component={LogsScreen} 
-              options={{ title: 'Registro de Actividades' }} 
-            />
-            <Stack.Screen 
-              name="PedidosScreen" 
-              component={PedidosScreen} 
-              options={{ title: 'Gestión de Pedidos' }} 
-            />
-          </Stack.Group>
-
-          {/* Optional MQTT Screen */}
-          {/* <Stack.Screen 
-            name="MQTT" 
-            component={MQTTScreen} 
-            options={{ title: 'Conexión MQTT' }} 
-          /> */}
+          )}
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>
