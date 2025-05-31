@@ -152,8 +152,9 @@ export default function SignUpScreen() {
           onPress={() => navigation.navigate('SignIn')}
         >
           <Text className="text-gray-600 text-center">
-            ¿Ya tienes una cuenta? <Text className="text-amber-500 font-medium">Inicia sesión</Text>
+            ¿Ya tienes una cuenta? 
           </Text>
+          <Text className="text-amber-500 font-medium">Inicia sesión</Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </BackgroundWrapper>

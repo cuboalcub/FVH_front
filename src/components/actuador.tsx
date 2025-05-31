@@ -3,11 +3,12 @@ import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMQTT } from '../hooks/useMQTT';
-import { get_actuator_topics } from '../utils/actuadorService';
+import { get_actuator_topics, post_actuator_mode_change } from '../utils/actuadorService';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const actuatorTypes = ['sprinkler', 'light', 'waterPump', 'notification'];
+const actuatorTypes = ['sprinkler', 'light', 'waterPump', 'notification', 'fan'];
 
 export default function ActuatorScreen() {
   const route = useRoute<any>();
@@ -52,8 +53,7 @@ export default function ActuatorScreen() {
     fetchTopics();
   }, [greenhouseId]);
 
-  // Subscribe to both status and mode topics
-  const { messages } = useMQTT([
+  const { messages, publish } = useMQTT([
     ...Object.values(statusTopics),
     ...Object.values(modeTopics),
   ]);
@@ -63,14 +63,40 @@ export default function ActuatorScreen() {
     : 'No topic';
 
   const currentMode = modeTopics[currentType]
-    ? messages[modeTopics[currentType]] || 'Sin datos'
+    ? messages[modeTopics[currentType]] || JSON.stringify({ state: 'AUTO' })
     : 'No topic';
 
   const handleTest = () => {
     const topic = topics[currentType];
     const payload = JSON.stringify({ action: 'test' });
-    console.log('Publicar en:', topic, payload);
+    publish(topic, payload);
     Alert.alert('Mensaje enviado', `Prueba enviada a ${currentType}`);
+  };
+
+  const handleToggleMode = async () => {
+    const modeTopic = modeTopics[currentType];
+    if (!modeTopic) return;
+
+    let newMode = 'AUTO';
+
+    try {
+      const matches = (Array.isArray(currentMode) ? currentMode.join('') : currentMode).match(/\{[^}]+\}/g);
+      if (matches && matches.length > 0) {
+        const lastMode = JSON.parse(matches[matches.length - 1]);
+        const current = (lastMode.mode || '').toUpperCase();
+        newMode = current === 'AUTO' ? 'MANUAL_OFF' : 'AUTO';
+      }
+    } catch (e) {
+      console.error('Error parsing current mode:', e);
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await post_actuator_mode_change(modeTopic, newMode, token || "");
+      console.log(`Modo publicado en el backend: ${modeTopic} -> ${newMode}`);
+    } catch (e) {
+      console.error('Error al registrar el cambio de modo:', e);
+    }
   };
 
   const changeType = (direction: 'prev' | 'next') => {
@@ -104,10 +130,10 @@ export default function ActuatorScreen() {
 
         <View className="bg-white/90 rounded-xl p-6 shadow-md">
           <Text className="text-lg font-semibold mb-2">Datos Actuador</Text>
-          <Text className="text-gray-700 mb-4">Estado</Text>
 
-          {/* Estado block */}
-          <View className="flex-row items-center mb-4">
+          {/* Estado */}
+          <Text className="text-gray-700 mb-1">Estado</Text>
+          <View className="flex-row items-center mb-4 flex-wrap">
             {(() => {
               let statusColor = 'gray';
               let displayStatus = 'Sin datos';
@@ -135,15 +161,15 @@ export default function ActuatorScreen() {
               return (
                 <>
                   <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: statusColor, marginRight: 8 }} />
-                  <Text className="text-gray-700">{displayStatus}</Text>
+                  <Text className="text-gray-700 flex-shrink">{displayStatus}</Text>
                 </>
               );
             })()}
           </View>
 
-          {/* Modo block */}
-          <Text className="text-gray-700 mb-4">Modo</Text>
-          <View className="flex-row items-center mb-4">
+          {/* Modo */}
+          <Text className="text-gray-700 mb-1">Modo</Text>
+          <View className="flex-row items-center mb-4 flex-wrap">
             {(() => {
               let modeColor = 'gray';
               let displayMode = 'Automático';
@@ -152,12 +178,12 @@ export default function ActuatorScreen() {
                 const matches = (Array.isArray(currentMode) ? currentMode.join('') : currentMode).match(/\{[^}]+\}/g);
                 if (matches && matches.length > 0) {
                   const lastMode = JSON.parse(matches[matches.length - 1]);
-                  const modeValue = (lastMode.state || '').toLowerCase();
+                  const modeValue = (lastMode.mode || '').toUpperCase();
 
                   if (modeValue === 'AUTO') {
                     modeColor = 'green';
                     displayMode = 'Automático';
-                  } else if (modeValue === 'MANUAL') {
+                  } else if (modeValue === 'MANUAL_OFF') {
                     modeColor = 'red';
                     displayMode = 'Manual';
                   } else {
@@ -171,19 +197,29 @@ export default function ActuatorScreen() {
               return (
                 <>
                   <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: modeColor, marginRight: 8 }} />
-                  <Text className="text-gray-700">{displayMode}</Text>
+                  <Text className="text-gray-700 flex-shrink">{displayMode}</Text>
                 </>
               );
             })()}
           </View>
 
+          {/* Botón de cambiar modo */}
           <TouchableOpacity
-            className="bg-orange-600 px-4 py-3 rounded-lg mt-2"
-            onPress={handleTest}
-            disabled={!topics[currentType]}
+            className="bg-blue-600 px-4 py-3 rounded-lg mb-3"
+            onPress={handleToggleMode}
+            disabled={!modeTopics[currentType]}
           >
             <Text className="text-white text-center font-semibold">
-              Probar {currentType}
+              Cambiar a {(() => {
+                try {
+                  const matches = (Array.isArray(currentMode) ? currentMode.join('') : currentMode).match(/\{[^}]+\}/g);
+                  if (matches && matches.length > 0) {
+                    const lastMode = JSON.parse(matches[matches.length - 1]);
+                    return (lastMode.mode || '').toUpperCase() === 'AUTO' ? 'Manual' : 'Automático';
+                  }
+                } catch (e) { }
+                return 'Manual';
+              })()}
             </Text>
           </TouchableOpacity>
         </View>

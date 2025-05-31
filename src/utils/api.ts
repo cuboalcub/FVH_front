@@ -29,5 +29,7 @@ export const API_ROUTES = {
 
   PATCH_PEDIDO: `${BASE_URL}pedido/charola`,
 
-  PATCH_CHAROLA: `${BASE_URL}invernadero/bandejas/peso_semilla`
+  PATCH_CHAROLA: `${BASE_URL}invernadero/bandejas/peso_semilla`,
+  ACTUADORES_LOG : `${BASE_URL}mqtt/mode`,
+  GET_TEMP : (id: string)=> `${BASE_URL}mqtt/get_temperature/${id}`
 };      

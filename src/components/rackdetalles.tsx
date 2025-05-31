@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   Animated,
   ScrollView,
   Modal,
@@ -17,10 +16,14 @@ import CustomBottomBar from "./barraInferior";
 import { Picker } from "@react-native-picker/picker";
 import { obtenerPedidos } from "../utils/pedidoService";
 import { get_charolas, patch_pedido, patch_bandeja } from "../utils/invernaderos";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+  import AsyncStorage from "@react-native-async-storage/async-storage";
+  import { API_ROUTES } from "../utils/api"; // Ajusta la ruta si es distinta
+import { useMQTT } from "../hooks/useMQTT";
+  
 type Props = NativeStackScreenProps<RootStackParamList, "RackDetails">;
 
 export default function RackDetailsScreen({ route, navigation }: Props) {
+  const { messages } = useMQTT(["greenhouse/greenhouse-1/sensor/temperature"]);
   const { rackId, greenhouseId, name } = route.params;
   const [idTray, setIdTray] = useState<string | null>(null);
   const [racks, setRacks] = useState<any[]>([]);
@@ -35,6 +38,44 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [checkedItemId, setCheckedItemId] = useState<number | null>(null);
+  const [temperature, setTemperature] = useState<string | null>(null);
+  const temperaturaMessages = messages["greenhouse/greenhouse-1/sensor/temperature"];
+const ultimaTemperatura = temperaturaMessages?.[temperaturaMessages.length - 1];
+
+let temperaturaValor = "N/A";
+
+if (ultimaTemperatura) {
+  try {
+    const parsed = JSON.parse(ultimaTemperatura);
+    temperaturaValor = parsed.value;
+  } catch (error) {
+    console.error("Error parsing temperature JSON:", error);
+  }
+}  
+
+  const fetchTemperature = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(API_ROUTES.GET_TEMP(rackId || ""), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      console.log("Temperatura obtenida:", data);
+  
+      // Ajusta según cómo llegue la temperatura en el JSON
+      if (data && data.temperatura !== undefined) {
+        setTemperature(data.temperatura.toString());
+      } else {
+        setTemperature("N/A");
+      }
+    } catch (error) {
+      console.error("Error al obtener la temperatura:", error);
+      setTemperature("Error");
+    }
+  };
+  
 
   console.log(quantities);
 
@@ -48,6 +89,8 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
       );
       const Charolas = await get_charolas(rackId || "", token || undefined);
       const detalles: any[] = [];
+      
+
       if (Array.isArray(pedidos)) {
         pedidos.forEach((pedido) => {
           if (Array.isArray(pedido.detalle_pedido)) {
@@ -62,6 +105,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
       }
       setPedidos(pedidos);
       setTrays(Charolas.data);
+      await fetchTemperature();
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
@@ -111,6 +155,7 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
     }
     return updated;
   });
+
 
   // Cambiar selección: si ya está seleccionado, deselecciona; si no, selecciona
   setCheckedItemId((prev) => (prev === newId ? null : newId));
@@ -253,7 +298,16 @@ export default function RackDetailsScreen({ route, navigation }: Props) {
                 <Text className="text-white/80 text-xs">Charolas</Text>
               </View>
             </View>
+
+            <View className="items-center">
+              <Text className="text-white font-bold text-xl">
+             {temperaturaValor} °C
+              </Text>
+              <Text className="text-white text-xs">Temperatura</Text>
+            </View>
+
           </View>
+
 
           {/* Trays grid */}
           <Text className="text-lg font-bold text-white mb-3">

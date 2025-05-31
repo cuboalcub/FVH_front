@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import mqtt from "mqtt";
 
-const MQTT_BROKER = "ws://192.168.137.171:8084/mqtt";
+const MQTT_BROKER = "ws://localhost:9001";
 const clientId = "emqx_react_native_" + Math.random().toString(16).substring(2, 8);
 const username = "emqx_test";
 const password = "emqx_test";

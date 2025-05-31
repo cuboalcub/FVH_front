@@ -7,7 +7,7 @@ const BackgroundWrapper = ({ children }: { children: React.ReactNode }) => {
       source={require('../../assets/bg.png')} 
       className="flex-1"
       resizeMode="cover"
-      blurRadius={2} // Efecto de desenfoque sutil
+      blurRadius={2}
     >
       <View className="flex-1 bg-black/20"> {/* Capa semitransparente para mejor legibilidad */}
         <View className="flex-1 p-4">
