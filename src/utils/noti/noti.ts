@@ -61,7 +61,6 @@ class NotiService {
         await this.subscribeToTopics(config.topics);
       }
 
-      this.setupNotificationListeners();
       this.setupReconnectionHandler();
     } catch (error) {
       console.error('[NotiService] Error durante inicialización:', error);

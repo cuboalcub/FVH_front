@@ -11,10 +11,12 @@ import MQTTTestScreen from "./utils/MQTTTestScreen";
 // Tus imports de pantallas existentes...
 import SignInScreen from '../src/components/signin';
 import SignUpScreen from '../src/components/signup';
+import HistNotScreen from "./utils/histNot";
 // ... otros imports ...
 
 export type RootStackParamList = {
   // ... tus tipos existentes ...
+  SignIn: undefined;
   MQTTTest: undefined; // Añade este tipo para la pantalla de pruebas
 };
 
@@ -51,7 +53,6 @@ export default function App() {
             headerStyle: { backgroundColor: '#2c3e50' },
             headerTintColor: '#ffffff',
             headerTitleStyle: { fontWeight: 'bold' },
-            headerBackTitleVisible: false,
             animation: 'slide_from_right'
           }}
         >
