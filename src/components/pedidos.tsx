@@ -15,7 +15,7 @@ import {
   DetallePedido,
   Pedido,
   obtenerPedidos
-} from '../utils/pedidoService';
+} from '../services/pedidoService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PedidosScreen = () => {
@@ -38,6 +38,8 @@ const PedidosScreen = () => {
         const token = await AsyncStorage.getItem('token');  // ← AWAIT necesario aquí
         const group = await AsyncStorage.getItem('group');
         const pedidos = await obtenerPedidos(token || undefined, group || undefined);
+        console.log('Pedidos obtenidos:', pedidos);
+        
         setOrders(pedidos);
         console.log('Pedidos obtenidos:', pedidos);
         setError(null);

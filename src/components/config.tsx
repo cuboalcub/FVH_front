@@ -6,7 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
-import { get_invernadores } from '../utils/invernaderos';
+import { get_invernadores } from '../services/invernaderos';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';

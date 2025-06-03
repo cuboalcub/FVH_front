@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { UserProvider } from "./components/usercontext";
 
 // Screen imports
+import MyComponent from './components/mycomponent';
 import SignInScreen from '../src/components/signin';
 import SignUpScreen from '../src/components/signup';
 import GreenhousesScreen from '../src/components/menuinvernaderos';
@@ -18,6 +19,8 @@ import LogsScreen from "./components/notifications";
 import MQTTScreen from "./components/MQTTScreen";
 import "../global.css";
 import ActuatorScreen from "./components/actuador";
+import { useMQTT } from "./hooks/useMQTT";
+import { registerForPushNotificationsAsync } from "./services/noti";
 
 // Type definitions for navigation parameters
 export type RootStackParamList = {
@@ -59,7 +62,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 // Screen options configuration
 const screenOptions = {
   headerShown: true,
-
+  
   // Header appearance
   headerStyle: {
     backgroundColor: '#2c3e50', // Dark blue background
@@ -69,13 +72,28 @@ const screenOptions = {
     fontWeight: 'bold', // Bold title text
   },
   headerBackTitleVisible: false, // Hide iOS back button text
-
+  
   // Transition animation
   animation: 'slide_from_right' as const, // Smooth screen transition
 };
 
 
 export default function App() {
+  const { connect, disconnect } = useMQTT({
+    uri: 'wss://192.168.137.171:8084/mqtt', // Public MQTT broker
+    clientId: `expo_${Math.random().toString(16).substr(2, 8)}`, // Unique client ID
+  });
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  
+    const topics = [
+      "greenhouse/greenhouse-1/actuator/notification",
+    ];
+  
+    connect(topics); // del hook useMQTT
+  
+    return () => disconnect();
+  }, []);
   return (
     <UserProvider>
       <NavigationContainer>

@@ -1,49 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import CustomBottomBar from './barraInferior';
+
 interface LogItem {
   id: string;
-  time: string;
-  message: string;
+  mensaje: string;
+  fecha: string;
 }
 
 export default function LogsScreen() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Notificaciones simuladas
   useEffect(() => {
-    setTimeout(() => {
-      setLogs([
-        {
-          id: '1',
-          time: '6:00 pm',
-          message: 'Usuario **Maria** ha activado los aspersores manualmente.',
-        },
-        {
-          id: '2',
-          time: '5:00 pm',
-          message: 'Humedad en rack A cayó por debajo del 50%',
-        },
-        {
-          id: '3',
-          time: '4:50 pm',
-          message: 'Usuario **Luis** ha activado las luces manualmente.',
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    fetch('http://localhost:8000/log_notificaciones/list/1') // ← Reemplaza por tu endpoint real
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        
+        setLogs(data.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error al obtener notificaciones:', err);
+        setLoading(false);
+      });
   }, []);
 
   const renderItem = ({ item }: { item: LogItem }) => (
     <View style={styles.logCard}>
-      <Text style={styles.time}>{item.time}</Text>
-      <Text style={styles.message}>{formatMessage(item.message)}</Text>
+      <Text style={styles.time}>{new Date(item.fecha).toLocaleTimeString()}</Text>
+      <Text style={styles.message}>{formatMessage(item.mensaje)}</Text>
     </View>
   );
 
   const formatMessage = (msg: string) => {
-    
     const parts = msg.split(/\*\*(.*?)\*\*/g);
     return (
       <Text>
@@ -69,14 +60,13 @@ export default function LogsScreen() {
       ) : (
         <FlatList
           data={logs}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
 
-      <CustomBottomBar/>
-
+      <CustomBottomBar />
     </View>
   );
 }
@@ -108,18 +98,5 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 14,
     color: '#333',
-  },
-  navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#3E3E3E',
-    paddingVertical: 12,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    marginTop: 10,
-  },
-  navItem: {
-    color: '#fff',
-    fontSize: 14,
   },
 });

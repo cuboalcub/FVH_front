@@ -1,54 +1,103 @@
-// hooks/useMQTT.ts
-import { useEffect, useState } from "react";
-import mqtt from "mqtt";
+import { useEffect, useState, useCallback } from 'react';
+import mqtt from 'mqtt/dist/mqtt';
+import * as Notifications from 'expo-notifications';
 
-const MQTT_BROKER = "ws://localhost:9001";
-const clientId = "emqx_react_native_" + Math.random().toString(16).substring(2, 8);
-const username = "emqx_test";
-const password = "emqx_test";
+interface MQTTOptions {
+  uri: string;
+  clientId?: string;
+  username?: string;
+  password?: string;
+}
 
-export function useMQTT(topics: string[]) {
-  const [client, setClient] = useState<mqtt.MqttClient | null>(null);
-  const [messages, setMessages] = useState<Record<string, string[]>>({}); // <--- ahora por tópico
+interface MQTTHookReturn {
+  messages: { [topic: string]: string[] };
+  publish: (topic: string, message: string) => void;
+  isConnected: boolean;
+  error: string | null;
+  connect: (topics: string[]) => void;
+  disconnect: () => void;
+}
 
-  useEffect(() => {
-    const mqttClient = mqtt.connect(MQTT_BROKER, {
-      clientId,
-      username,
-      password,
-    });
+export function useMQTT(options: MQTTOptions): MQTTHookReturn {
+  const [client, setClient] = useState<any>(null);
+  const [messages, setMessages] = useState<{ [topic: string]: string[] }>({});
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    mqttClient.on("connect", () => {
-      console.log("✅ Conectado a MQTT");
-      topics.forEach((topic) => {
-        mqttClient.subscribe(topic, (err) => {
-          if (!err) {
-            console.log(`📡 Suscrito a: ${topic}`);
-          } else {
-            console.error("❌ Error al suscribirse:", err);
-          }
+  const connect = useCallback((topics: string[]) => {
+    try {
+      const clientOptions = {
+        clientId: options.clientId || `expo_${Math.random().toString(16).substr(2, 8)}`,
+        username: options.username,
+        password: options.password,
+        protocol: 'ws',
+        reconnectPeriod: 1000, // Reintenta cada segundo
+        connectTimeout: 10000, // 10 segundos de espera
+      };
+
+      const mqttClient = mqtt.connect(options.uri, clientOptions);
+
+      mqttClient.on('connect', () => {
+        setIsConnected(true);
+        setError(null);
+        topics.forEach(topic => {
+          mqttClient.subscribe(topic, { qos: 0 }, (err: any) => {
+            if (err) setError(`Subscribe error: ${err.message}`);
+          });
         });
       });
-    });
 
-    mqttClient.on("message", (topic, message) => {
-      const msg = message.toString();
-      console.log(`📩 Mensaje recibido en ${topic}: ${msg}`);
-      setMessages((prev) => ({
-        ...prev,
-        [topic]: [...(prev[topic] || []), msg],
-      }));
-    });
+      mqttClient.on('message', (topic: string, message: Buffer) => {
+        const payload = message.toString();
 
-    mqttClient.on("error", (err) => {
-      console.error("⚠️ Error MQTT:", err);
-    });
+        // Guarda el mensaje en el estado
+        setMessages(prev => ({
+          ...prev,
+          [topic]: [...(prev[topic] || []), payload],
+        }));
 
-    setClient(mqttClient);
-    return () => {
-        mqttClient.end();
-      };      
-  }, [topics.join(",")]);
+        // 🔔 Envía notificación local
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: `📡 Mensaje MQTT (${topic.split('/').pop()})`,
+            body: payload,
+            sound: true,
+          },
+          trigger: null, // Inmediato
+        });
+      });
 
-  return { messages };
+      mqttClient.on('error', (err: any) => {
+        setError(`MQTT error: ${err.message}`);
+        setIsConnected(false);
+      });
+
+      mqttClient.on('close', () => {
+        setIsConnected(false);
+      });
+
+      setClient(mqttClient);
+    } catch (err) {
+      setError(`Connection failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }, [options.uri, options.clientId, options.username, options.password]);
+
+  const disconnect = useCallback(() => {
+    if (client) {
+      client.end();
+      setIsConnected(false);
+    }
+  }, [client]);
+
+  const publish = useCallback((topic: string, message: string) => {
+    if (client && isConnected) {
+      client.publish(topic, message, { qos: 0 }, (err: any) => {
+        if (err) setError(`Publish error: ${err.message}`);
+      });
+    } else {
+      setError('Cannot publish - not connected');
+    }
+  }, [client, isConnected]);
+
+  return { messages, publish, isConnected, error, connect, disconnect };
 }

@@ -3,7 +3,7 @@ import { View, Text, TextInput, Alert, TouchableOpacity, KeyboardAvoidingView, P
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackgroundWrapper from './background';
-import { signup } from '../utils/authservice';
+import { signup } from '../services/authservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 

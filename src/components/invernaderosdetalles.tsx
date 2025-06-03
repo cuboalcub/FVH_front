@@ -5,7 +5,7 @@ import { RootStackParamList } from '../App';
 import BackgroundWrapper from './background';
 import CustomBottomBar from './barraInferior';
 import { MaterialIcons } from '@expo/vector-icons';
-import { get_racks } from '../utils/invernaderos'; // Asegúrate que la ruta sea correcta
+import { get_racks } from '../services/invernaderos'; // Asegúrate que la ruta sea correcta
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GreenhouseDetails'>;

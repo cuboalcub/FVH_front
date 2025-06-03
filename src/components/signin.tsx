@@ -12,7 +12,7 @@ import { ParamListBase, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useUser } from "./usercontext";
 import BackgroundWrapper from "./background";
-import { login, checkTokenUser } from "../utils/authservice";
+import { login, checkTokenUser } from "../services/authservice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -32,6 +32,7 @@ export default function SignInScreen() {
         if (token) {
           const response = await checkTokenUser(token);
           if (response.status === 200) {
+            console.log("Token is valid, navigating to Greenhouses");
             const Type = await AsyncStorage.getItem("userType");
             setUserType(Type || ""); // Provide a fallback value
             navigation.navigate("Greenhouses");
@@ -57,18 +58,17 @@ export default function SignInScreen() {
     try {
       const resultado = await login(email, password);
       if (resultado.status === 200) {
-        await AsyncStorage.setItem("token", resultado.token);
-        await AsyncStorage.setItem("group", resultado.group);
+        console.log("Login successful:", resultado);
         const Type = resultado.userType == true ? "admin" : "user";
         setUserType(Type);
+        await AsyncStorage.setItem("group", String(resultado.group));
         await AsyncStorage.setItem("userType", Type);
+        await AsyncStorage.setItem("token", resultado.token);
         navigation.navigate("Greenhouses");
+
       } else {
         Alert.alert("Error", resultado.message || "Credenciales incorrectas");
       }
-    } catch (error) {
-      Alert.alert("Error", "Ocurrió un error al iniciar sesión");
-      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -168,31 +168,6 @@ export default function SignInScreen() {
           </View>
         
 
-        <View className="mt-8">
-          <Text className="text-center text-gray-500 mb-4">o accede como</Text>
-
-          <View className="flex-row justify-center space-x-4">
-            <TouchableOpacity
-              className="bg-gray-100 rounded-lg px-6 py-2"
-              onPress={() => {
-                setUserType("user");
-                navigation.navigate("Greenhouses");
-              }}
-            >
-              <Text className="text-gray-700">Cliente</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="bg-gray-800 rounded-lg px-6 py-2"
-              onPress={() => {
-                setUserType("admin");
-                navigation.navigate("Greenhouses");
-              }}
-            >
-              <Text className="text-white">Administrador</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </KeyboardAvoidingView>
     </BackgroundWrapper>
   );

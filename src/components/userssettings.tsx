@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Modal, Alert } from 
 import { Picker } from '@react-native-picker/picker';
 import BackgroundWrapper from './background';
 import { MaterialIcons } from '@expo/vector-icons';
-import { create_group, get_users, update_user, delete_user } from '../utils/groupUser';
+import { create_group, get_users, update_user, delete_user } from '../services/groupUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ConfigUsuariosScreen() {
